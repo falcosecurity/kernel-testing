@@ -1,0 +1,66 @@
+---
+# tasks file for bootstrap
+
+- name: "Assert mandatory variables are defined"
+  assert:
+    that:
+      - machines is defined
+      - ssh_key_path != ""
+
+- name: Check if the ~/.ssh directory exists, if not create it
+  file:
+    path: "{{ ssh_key_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Checking if ssh key exists and if not generate a new one
+  openssh_keypair:
+    path: "{{ ssh_key_path }}/{{ssh_key_name}}"
+
+- name: Create the files directory in bootstrap role
+  file:
+    path: "./roles/bootstrap/files"
+    state: directory
+    mode: '0755'
+
+- name: Template the ignite-vm.yaml configuratin file
+  template:
+    src: ignite-vm.yaml.j2
+    dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
+  loop: 
+    "{{ machines }}"
+  delegate_to: localhost
+
+- name: Create virtual machines
+  shell: |
+    ignite run --config "./roles/bootstrap/files/{{ item.name }}.yaml"
+  loop: "{{ machines }}"
+  become: yes
+
+- name: Wait for the VMs to be running
+  shell:
+    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{item.name}},\{\{.Status.Running\}\}=true | wc -l
+  register: result
+  until: result.stdout | int == 2
+  retries: 5
+  delay: 10
+  become: yes
+  loop: "{{ machines }}"
+
+
+- name: Get IP of the VMs and register them in a variable
+  shell:
+    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }},\{\{.Status.Running\}\}=true -t \{\{.Status.Network.IPAddresses\}\} 
+  register: machineIps
+  become: yes
+  failed_when: machineIps.stdout_lines | length != 1
+  loop: "{{ machines }}"
+    
+- name: Template the inventory.ini.j2 configuration file to invetory.ini
+  template:
+    src: inventory.ini.j2
+    dest: inventory.ini
+  delegate_to: localhost
+
+- name: Refresh inventory to ensure that the new generated one is used
+  meta: refresh_inventory

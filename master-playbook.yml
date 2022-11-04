@@ -1,0 +1,5 @@
+---
+# Master playbook to run a once the whole configuration.
+# Check the specific playbooks and roles to have more information.
+- import_playbook: bootstrap.yml
+- import_playbook: modern-bpf-test.yml

@@ -1,0 +1,29 @@
+apiVersion: ignite.weave.works/v1alpha4
+kind: VM
+metadata:
+  # Required, the name of the VM
+  name: {{ item.name }}
+spec:
+  # Optional, how many vCPUs should be allocated for the VM
+  # Default: 1
+  cpus: {{ cpus }}
+  # Optional, how much RAM should be allocated for the VM
+  # Default: 512MB
+  memory: {{ memory }}GB
+
+  image:
+    # Required, what OCI image to use as the VM's rootfs
+    # For example: weaveworks/ignite-ubuntu:latest
+    oci: {{ item.image }}
+  kernel:
+    # Required, what OCI image to get the kernel binary (and optionally modules) from
+    # Default: weaveworks/ignite-kernel:5.10.51
+    oci:  {{ item.kernel}}
+
+
+  # Optional, provides automation to easily access your VM with the "ignite ssh" command
+  # If "ssh: true" is set, Ignite will generate an SSH key and copy the
+  # public key into the VM. This allows for automatic "ignite ssh" logins.
+  # Alternatively: specify a path to a public key to put in /root/.ssh/authorized_keys in the VM.
+  # Default: unset, no actions regarding SSH automation
+  ssh: {{ pub_key_path }}

@@ -1,0 +1,44 @@
+---
+# tasks file for clean-up
+# this role removes the cluster and the files created by the bootstrap role
+
+- name: Find and save in a local variable all machines config files
+  find:
+    paths: ./roles/bootstrap/files
+    patterns: "*.yaml"
+  register: files_to_delete
+
+- name: Delete all the machine config files files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"
+
+- name: Get name of vms and register them in variables
+  shell:
+    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{item.name}},\{\{.Status.Running\}\}=true -t \{\{.Name\}\} 
+  register: vms
+  become: yes
+  loop: "{{ machines }}"
+
+- name: Stop machines
+  shell:
+   cmd: ignite kill {{item.1}}
+  become: yes
+  loop: "{{ vms.results|subelements('stdout_lines') }}"
+
+- name: Delete machines
+  shell:
+   cmd: ignite rm {{item.1}}
+  become: yes
+  loop: "{{ vms.results|subelements('stdout_lines') }}"
+
+- name: Remove the files directory in bootstrap role
+  file:
+    path: "./roles/bootstrap/files"
+    state: absent
+
+- name: Remove the inventory.ini file
+  file:
+    path: "./inventory.ini"
+    state: absent
