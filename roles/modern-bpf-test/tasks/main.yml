@@ -29,6 +29,7 @@
     - name: run bpf_test excluding execve syscall.
       command: /root/bpf_test --gtest_filter=-'SyscallEnter.execveE:SyscallEnter.execveatE'
       when: inventory_hostname in execve_bug_kernels
+      register: result
   rescue:
      - name: Print when errors
        ansible.builtin.debug:
