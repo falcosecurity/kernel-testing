@@ -7,7 +7,7 @@
 #    delay: 10
 #    timeout: "{{time_out}}"
 
-- name: Copy bpf_test binary in the machines
+- name: Copy drivers_test binary in the machines
   copy:
     src: "{{ item }}"
     dest: "/root/{{ item }}"
@@ -15,23 +15,21 @@
     owner: root
     group: root
     mode: '0755'
-  with_items: [bpf_test]
+  with_items: [drivers_test]
 
-- name: Run the bpf_test binary
+- name: Run the drivers_test binary
   block:
-    - name: run bpf_test
-      #command: /root/bpf_test --gtest_filter=-'SyscallEnter.execveE:SyscallEnter.execveatE'
-      command: /root/bpf_test
+    - name: run drivers_test
+      command: /root/drivers_test -m
       register: result
       when: inventory_hostname not in execve_bug_kernels
 
     # Exclude the execve family syscalls when running in bugged kernels
-    - name: run bpf_test excluding execve syscall.
-      command: /root/bpf_test --gtest_filter=-'SyscallEnter.execveE:SyscallEnter.execveatE'
+    - name: run drivers_test excluding execve syscall.
+      command: /root/drivers_test -m --gtest_filter=-'SyscallEnter.execveE:SyscallEnter.execveatE'
       when: inventory_hostname in execve_bug_kernels
       register: result
   rescue:
      - name: Print when errors
        ansible.builtin.debug:
          msg: "{{ result }}"
-
