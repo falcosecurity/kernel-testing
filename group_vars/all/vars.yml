@@ -32,6 +32,8 @@ machines:
   - {name: "5.18.19",kernel: "docker.io/aldokcl/dronet:5.18.19-amd64", image: "{{ defaultBaseImage }}"}
   - {name: "5.19.17",kernel: "docker.io/aldokcl/dronet:5.19.17-amd64", image: "{{ defaultBaseImage }}"}
   - {name: "6.0.6",kernel: "docker.io/aldokcl/dronet:6.0.6-amd64", image: "{{ defaultBaseImage }}"}
+  - {name: "6.1.0",kernel: "docker.io/aldokcl/dronet:6.1-amd64", image: "{{ defaultBaseImage }}"}
+  - {name: "6.2.0",kernel: "docker.io/aldokcl/dronet:6.2-amd64", image: "{{ defaultBaseImage }}"}
 
 
 # Kernel that does not support running execve with null argv: `https://github.com/torvalds/linux/commit/dcd46d897adb70d63e025f175a00a89797d31a43`
