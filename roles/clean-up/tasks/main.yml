@@ -16,7 +16,7 @@
 
 - name: Get name of vms and register them in variables
   shell:
-    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{item.name}},\{\{.Status.Running\}\}=true -t \{\{.Name\}\} 
+    cmd: ignite ps --all -f \{\{.ObjectMeta.Name\}\}={{item.name}} -t \{\{.Name\}\} 
   register: vms
   become: yes
   loop: "{{ machines }}"
