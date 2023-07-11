@@ -1,0 +1,11 @@
+# Playbook used to clone git repositories that will be used on the
+# target nodes. We want to avoid downloading the same repos on multiple
+# target nodes.
+# Check the role for more information
+- hosts: all
+  gather_facts: no
+  remote_user: "{{ remote_user }}"
+  become: no
+  serial: 30
+  roles:
+    - git-repos

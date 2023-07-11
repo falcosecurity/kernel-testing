@@ -62,3 +62,20 @@ prv_key_path: "{{ssh_key_path}}/{{ssh_key_name}}"
 
 #path to the public key used to ssh to the machines, if this key does not exist then a new one is generated with the same name
 pub_key_path: "{{ssh_key_path}}/{{ssh_key_name}}.pub"
+
+# Repositories to be cloned on the local machine and copied to the VMs
+# Each repos entry requires the following fields:
+# name: the folder name where the repo will be cloned. Root folder under ./roles/git-repos/files/repos
+# repo: git, SSH, or HTTP(S) protocol address of the git repository;
+# version: What version of the repository to check out. This can be the literal string HEAD, 
+# a branch name, a tag name. It can also be a SHA-1 hash, in which case refspec needs to be 
+# specified if the given revision is not already available. If not set the default value is "HEAD".
+# refspec: Add an additional refspec to be fetched. If version is set to a SHA-1 not reachable 
+# from any branch or tag, this option may be necessary to specify the ref containing the SHA-1. 
+# Uses the same syntax as the git fetch command. An example value could be “refs/meta/config”.
+# Docs ref: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/git_module.html
+repos:
+ libs: {name: "falcosecurity-libs", repo: "https://github.com/falcosecurity/libs.git", version: "0.11.3"}
+
+local_repos_folder: "./roles/git-repos/files/repos"
+remote_repos_folder: "/root"
