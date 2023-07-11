@@ -1,0 +1,9 @@
+# Playbook used to run scap-open-test role.
+# Check the role for more information
+- hosts: all
+  gather_facts: no
+  remote_user: "{{ remote_user }}"
+  become: yes
+  serial: 30
+  roles:
+    - scap-open-test
