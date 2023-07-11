@@ -10,14 +10,15 @@ remote_user: root
 # Machine Configuration #
 #########################
 
-# The default base image for the VMs. We have a dedicated variable here since it is static.
-# If you need to match a given kernel with a specific base image then change it in the machine entry.
-defaultBaseImage: "aldokcl/dronet:ignite-ubuntu-22.04-amd64"
+# The default base rootfs for the VMs. We have a dedicated variable here since it is static.
+# If you need to match a given kernel with a specific base rootfs then change it in the machine entry.
+defaultBaserootfs: "aldokcl/dronet:ignite-ubuntu-22.04-amd64"
+
 
 # Each machine entry requires the following fields
-# name: the name givent to the vm;
-# kernel: reference to an oci image containing a kernel;
-# image: reference to an oci image used as base image for the vm.
+# name: the name given to the vm;
+# kernel: reference to an OCI image containing a kernel;
+# rootfs: reference to an OCI image used as base rootfs for the vm.
 machines:
   - {name: "5.8.18",kernel: "docker.io/aldokcl/dronet:5.8.18-amd64", image: "{{ defaultBaseImage }}"}
   - {name: "5.9.16",kernel: "docker.io/aldokcl/dronet:5.9.16-amd64", image: "{{ defaultBaseImage }}"}

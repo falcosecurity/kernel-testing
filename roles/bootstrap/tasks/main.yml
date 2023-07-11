@@ -33,7 +33,7 @@
 
 - name: Create virtual machines
   shell: |
-    ignite run --config "./roles/bootstrap/files/{{ item.name }}.yaml"
+    ignite run --config "./roles/bootstrap/files/{{ item.name }}.yaml" --runtime docker
   loop: "{{ machines }}"
   become: yes
 

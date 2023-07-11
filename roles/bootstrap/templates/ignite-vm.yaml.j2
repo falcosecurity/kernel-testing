@@ -14,9 +14,9 @@ spec:
   image:
     # Required, what OCI image to use as the VM's rootfs
     # For example: weaveworks/ignite-ubuntu:latest
-    oci: {{ item.image }}
+    oci: {{ item.rootfs }}
   kernel:
-    # Required, what OCI image to get the kernel binary (and optionally modules) from
+    # Required, what OCI rootfs to get the kernel binary (and optionally modules) from
     # Default: weaveworks/ignite-kernel:5.10.51
     oci:  {{ item.kernel}}
 
