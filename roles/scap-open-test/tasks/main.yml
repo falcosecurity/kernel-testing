@@ -33,7 +33,7 @@
 
 - name: Build scap-open
   shell: |
-    make scap-open
+    make scap-open -j {{ cpus }}
   args:
     chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
 
@@ -46,7 +46,7 @@
 
 - name: Load the kernel module
   shell: |
-    insmod driver/scap.ko
+    insmod driver/scap.ko -j {{ cpus }}
   args:
     chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
 
@@ -64,7 +64,7 @@
 
 - name: Build bpf probe
   shell: |
-    make bpf
+    make bpf -j {{ cpus }}
   args:
     chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
 
