@@ -1,0 +1,20 @@
+name: Test drivers against a matrix of kernels/distros
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *' # every day at 8am
+    
+jobs:
+  test-kernels:
+    name: build-latest-kernel
+    runs-on: [ "self-hosted", "linux", "X64" ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+    
+      - name: Start tests
+        run: |
+          ansible-playbook master-playbook.yml
+      
+      
