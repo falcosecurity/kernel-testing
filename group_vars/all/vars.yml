@@ -12,32 +12,28 @@ remote_user: root
 
 # The default base rootfs for the VMs. We have a dedicated variable here since it is static.
 # If you need to match a given kernel with a specific base rootfs then change it in the machine entry.
-defaultBaserootfs: "aldokcl/dronet:ignite-ubuntu-22.04-amd64"
-
+defaultBaserootfs: "therealbobo/ubuntu-rootfs:23.04"
 
 # Each machine entry requires the following fields
 # name: the name given to the vm;
 # kernel: reference to an OCI image containing a kernel;
 # rootfs: reference to an OCI image used as base rootfs for the vm.
 machines:
-  - {name: "5.8.18",kernel: "docker.io/aldokcl/dronet:5.8.18-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.9.16",kernel: "docker.io/aldokcl/dronet:5.9.16-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.10.152",kernel: "docker.io/aldokcl/dronet:5.10.152-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.11.22",kernel: "docker.io/aldokcl/dronet:5.11.22-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.12.19",kernel: "docker.io/aldokcl/dronet:5.12.19-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.13.19",kernel: "docker.io/aldokcl/dronet:5.13.19-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.14.21",kernel: "docker.io/aldokcl/dronet:5.14.21-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.15.76",kernel: "docker.io/aldokcl/dronet:5.15.76-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.16.20",kernel: "docker.io/aldokcl/dronet:5.16.20-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.17.15",kernel: "docker.io/aldokcl/dronet:5.17.15-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.18.19",kernel: "docker.io/aldokcl/dronet:5.18.19-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "5.19.17",kernel: "docker.io/aldokcl/dronet:5.19.17-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "6.0.6",kernel: "docker.io/aldokcl/dronet:6.0.6-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "6.1.0",kernel: "docker.io/aldokcl/dronet:6.1-amd64", image: "{{ defaultBaseImage }}"}
-  - {name: "6.2.0",kernel: "docker.io/aldokcl/dronet:6.2-amd64", image: "{{ defaultBaseImage }}"}
-
-
-no_btf_support: []
+  - {name: "arch-5.18",kernel: "therealbobo/arch-kernel:5.18", rootfs: "therealbobo/arch-image:5.18"}
+  - {name: "arch-6.0",kernel: "therealbobo/arch-kernel:6.0", rootfs: "therealbobo/arch-image:6.0"}
+  - {name: "fedora-38",kernel: "therealbobo/fedora-kernel:38-6.2.9", rootfs: "therealbobo/fedora-image:38-6.2.9"}
+  - {name: "fedora-36",kernel: "therealbobo/fedora-kernel:36-5.17.5", rootfs: "therealbobo/fedora-image:36-5.17.5"}
+  - {name: "fedora-33",kernel: "therealbobo/fedora-kernel:33-5.8.15", rootfs: "therealbobo/fedora-image:33-5.8.15"}
+  - {name: "ubuntu-23.04-6.3.0",kernel: "therealbobo/ubuntu-kernel:23.04-6.3.0", rootfs: "therealbobo/ubuntu-image:23.04-6.3.0"}
+  - {name: "centos-4.18",kernel: "therealbobo/centos-kernel:4.18", rootfs: "therealbobo/centos-image:4.18"}
+  - {name: "centos-5.14",kernel: "therealbobo/centos-kernel:5.14", rootfs: "therealbobo/centos-image:5.14"}
+  - {name: "amz-linux-2023-6.1.34",kernel: "therealbobo/amazonlinux2023-kernel:6.1.34", rootfs: "therealbobo/amazonlinux2023-image:6.1.34"}
+  - {name: "amz-linux-2022-5.15.73",kernel: "therealbobo/amazonlinux2022-kernel:5.15.73", rootfs: "therealbobo/amazonlinux2022-image:5.15.73"}
+  - {name: "amz-linux2-4.19",kernel: "therealbobo/amazonlinux2-kernel:4.19", rootfs: "therealbobo/amazonlinux2-image:4.19"}
+  - {name: "amz-linux2-5.4",kernel: "therealbobo/amazonlinux2-kernel:5.4", rootfs: "therealbobo/amazonlinux2-image:5.4"}
+  - {name: "amz-linux2-5.15",kernel: "therealbobo/amazonlinux2-kernel:5.15", rootfs: "therealbobo/amazonlinux2-image:5.15"}
+  - {name: "oracle-linux-5.15",kernel: "therealbobo/oraclelinux-kernel:5.15", rootfs: "therealbobo/oraclelinux-image:5.15"}
+  - {name: "oracle-linux-5.4",kernel: "therealbobo/oraclelinux-kernel:5.4", rootfs: "therealbobo/oraclelinux-image:5.4"}
 
 # Kernel that does not support running execve with null argv: `https://github.com/torvalds/linux/commit/dcd46d897adb70d63e025f175a00a89797d31a43`
 # We need to disable the tests calling the execve syscall.
@@ -46,6 +42,13 @@ execve_bug_kernels:
   - "5.13.19"
   - "5.14.21"
 
+no_btf_support:
+  - "centos-4.18"
+  - "amz-linux2-5.15"
+  - "amz-linux2-4.19"
+  - "amz-linux2-5.4"
+  - "fedora-33"
+  - "oracle-linux-5.4"
 # Number of cpus.
 cpus: 2
 # Memory size in GB.
@@ -56,7 +59,7 @@ memory: 2
 #####################
 
 #Path to the generated SSH private key file
-ssh_key_path: ""
+ssh_key_path: "/root/.ssh/"
 ssh_key_name: ignite_machines
 
 #Path to the private key
@@ -64,6 +67,7 @@ prv_key_path: "{{ssh_key_path}}/{{ssh_key_name}}"
 
 #path to the public key used to ssh to the machines, if this key does not exist then a new one is generated with the same name
 pub_key_path: "{{ssh_key_path}}/{{ssh_key_name}}.pub"
+
 
 # Repositories to be cloned on the local machine and copied to the VMs
 # Each repos entry requires the following fields:
