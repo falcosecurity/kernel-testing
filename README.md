@@ -5,7 +5,7 @@ This repository automatically runs Falco [drivers_test](https://github.com/falco
 ## Prerequisites
 
 * Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-* Install [Ignite](https://ignite.readthedocs.io/en/stable/installation/)
+* Install [Ignite](https://ignite.readthedocs.io/en/stable/installation/) from therealbobo fork (use main branch): https://github.com/therealbobo/ignite
 
 ## Configure repository
 
