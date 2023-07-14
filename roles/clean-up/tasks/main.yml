@@ -33,7 +33,34 @@
   become: yes
   loop: "{{ vms.results|subelements('stdout_lines') }}"
 
-- name: Remove the files directory in bootstrap role
+# Ignite imports the images from the OCI ones and caches them.
+# If the images change in the remote repository, ignite continues to use
+# the cached ones. During the clean phase, we make sure to remove them from
+# the cache.
+- name: Remove rootfs and kernel images from ignite cache
+  block:
+    - name: List cached images
+      shell:
+       cmd: ignite image ls -q 
+      register: images
+    
+    - name: Remove cached images from ignite
+      shell:
+       cmd: ignite image rm {{ item }}
+      loop: "{{ images.stdout_lines }}"
+      
+    - name: List cached kernels
+      shell:
+       cmd: ignite kernel ls -q 
+      register: kernels
+    
+    - name: Remove cached kernels from ignite
+      shell:
+       cmd: ignite kernel rm {{ item }}
+      loop: "{{ kernels.stdout_lines }}"
+  become: true
+
+- name: Remove the files directory in the bootstrap role
   file:
     path: "./roles/bootstrap/files"
     state: absent
