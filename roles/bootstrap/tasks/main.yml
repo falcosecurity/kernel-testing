@@ -31,6 +31,20 @@
     "{{ machines }}"
   delegate_to: localhost
 
+- name: Pull kernel and rootfs OCI images
+  block:
+    - name: Pull kernel OCI images
+      community.docker.docker_image:
+        name: "{{ item.kernel }}"
+        source: pull
+      loop: "{{ machines }}"
+
+    - name: Pull rootfs OCI images
+      community.docker.docker_image:
+        name: "{{ item.rootfs }}"
+        source: pull
+      loop: "{{ machines }}"
+
 - name: Create virtual machines
   shell: |
     ignite run --config "./roles/bootstrap/files/{{ item.name }}.yaml" --runtime docker
@@ -46,7 +60,6 @@
   delay: 10
   become: yes
   loop: "{{ machines }}"
-
 
 - name: Get IP of the VMs and register them in a variable
   shell:
