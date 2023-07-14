@@ -14,24 +14,31 @@
     state: absent
   with_items: "{{ files_to_delete.files }}"
 
-- name: Get name of vms and register them in variables
-  shell:
-    cmd: ignite ps --all -f \{\{.ObjectMeta.Name\}\}={{item.name}} -t \{\{.Name\}\} 
-  register: vms
-  become: yes
-  loop: "{{ machines }}"
 
-- name: Stop machines
-  shell:
-   cmd: ignite kill {{item.1}}
-  become: yes
-  loop: "{{ vms.results|subelements('stdout_lines') }}"
+# We search all the machines created for this run_id.
+# We make sure that all machines are stopped and then delete them.
+- name: Stop running machines and delete them
+  block:
+    - name: Get name of running machines run_id={{ run_id }}
+      shell:
+        cmd: ignite ps --all -f \{\{.Labels.run\}\}={{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Name\}\}
+      register: vms
 
-- name: Delete machines
-  shell:
-   cmd: ignite rm {{item.1}}
-  become: yes
-  loop: "{{ vms.results|subelements('stdout_lines') }}"
+    - name: Stop running machines run_id={{ run_id }}
+      shell:
+       cmd: ignite kill {{item}}
+      loop: "{{ vms.stdout_lines }}"
+
+    - name: Get name of stopped machines run_id={{ run_id }}
+      shell:
+        cmd: ignite ps --all -f \{\{.Labels.run\}\}={{ run_id }} -t \{\{.Name\}\}
+      register: vms
+
+    - name: Delete machines run_id={{ run_id }}
+      shell:
+       cmd: ignite rm {{ item }}
+      loop: "{{ vms.stdout_lines }}"
+  become: true
 
 # Ignite imports the images from the OCI ones and caches them.
 # If the images change in the remote repository, ignite continues to use
@@ -41,7 +48,7 @@
   block:
     - name: List cached images
       shell:
-       cmd: ignite image ls -q 
+       cmd: ignite images ls | tail +2 | cut -f 1 
       register: images
     
     - name: Remove cached images from ignite
@@ -51,7 +58,7 @@
       
     - name: List cached kernels
       shell:
-       cmd: ignite kernel ls -q 
+       cmd: ignite kernel ls | tail +2 | cut -f 1 
       register: kernels
     
     - name: Remove cached kernels from ignite
