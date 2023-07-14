@@ -29,6 +29,8 @@
     dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
   loop: 
     "{{ machines }}"
+  when: item.arch == ansible_facts["architecture"]
+
   delegate_to: localhost
 
 - name: Pull kernel and rootfs OCI images
@@ -38,37 +40,42 @@
         name: "{{ item.kernel }}"
         source: pull
       loop: "{{ machines }}"
+      when: item.arch == ansible_facts["architecture"]
 
     - name: Pull rootfs OCI images
       community.docker.docker_image:
         name: "{{ item.rootfs }}"
         source: pull
       loop: "{{ machines }}"
+      when: item.arch == ansible_facts["architecture"]
 
-- name: Create virtual machines
+- name: Create virtual machines run_id={{ run_id }}
   shell: |
     ignite run --config "./roles/bootstrap/files/{{ item.name }}.yaml" --runtime docker
   loop: "{{ machines }}"
+  when: item.arch == ansible_facts["architecture"]
   become: yes
 
-- name: Wait for the VMs to be running
+- name: Wait for the VMs to be running run_id={{ run_id }}
   shell:
-    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{item.name}},\{\{.Status.Running\}\}=true | wc -l
+    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{item.name}}-{{ run_id }},\{\{.Status.Running\}\}=true | wc -l
   register: result
   until: result.stdout | int == 2
   retries: 5
   delay: 10
   become: yes
   loop: "{{ machines }}"
+  when: item.arch == ansible_facts["architecture"]
 
-- name: Get IP of the VMs and register them in a variable
+- name: Get IP of the VMs and register them in a variable run_id={{ run_id }}
   shell:
-    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }},\{\{.Status.Running\}\}=true -t \{\{.Status.Network.IPAddresses\}\} 
+    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }}-{{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Status.Network.IPAddresses\}\} 
   register: machineIps
   become: yes
   failed_when: machineIps.stdout_lines | length != 1
   loop: "{{ machines }}"
-    
+  when: item.arch == ansible_facts["architecture"]
+
 - name: Template the inventory.ini.j2 configuration file to invetory.ini
   template:
     src: inventory.ini.j2

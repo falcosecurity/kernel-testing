@@ -2,7 +2,9 @@ apiVersion: ignite.weave.works/v1alpha4
 kind: VM
 metadata:
   # Required, the name of the VM
-  name: {{ item.name }}
+  name: {{ item.name }}-{{ run_id}}
+  labels:
+    run: {{ run_id }}
 spec:
   # Optional, how many vCPUs should be allocated for the VM
   # Default: 1
