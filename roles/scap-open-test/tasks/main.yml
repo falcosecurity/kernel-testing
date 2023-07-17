@@ -1,82 +1,199 @@
 ---
 # tasks file for scap-open-test
+- name: Setting output directory for results
+  set_fact: output_dest_dir="{{ output_dir }}/scap-open-test/{{ inventory_hostname }}"
 
-- name: Fix the dns issues
-  shell: |
-    unlink /etc/resolv.conf && echo 'nameserver 1.1.1.1' > /etc/resolv.conf
+- name: Create output directory on localhost
+  block:
+    - name: Create output directory ({{ output_dir }}) if it does not exist
+      file:
+        path: "{{ output_dest_dir }}"
+        state: directory
+        mode: '0755'
 
-- name: Create cmake output dir
-  file:
-    path: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-    state: directory
-    mode: "0755"
+  become: false
+  delegate_to: localhost
 
-- name: Prepare cmake for repository (without modern probe)
-  shell: |
-    cmake -DUSE_BUNDLED_DEPS=ON -DBUILD_LIBSCAP_MODERN_BPF=OFF -DBUILD_LIBSCAP_GVISOR=OFF -DBUILD_BPF=true -DCREATE_TEST_TARGETS=OFF ..
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-  when: inventory_hostname in no_btf_support
+- name: Prepare the build directory
+  block:
+    # TODO: move this elsewhere.
+    - name: Fix the dns issues
+      shell: |
+        unlink /etc/resolv.conf && echo 'nameserver 1.1.1.1' > /etc/resolv.conf
 
-- name: Prepare cmake for repository (with modern probe)
-  shell: |
-    cmake -DUSE_BUNDLED_DEPS=ON -DBUILD_LIBSCAP_MODERN_BPF=ON -DBUILD_LIBSCAP_GVISOR=OFF -DBUILD_BPF=true -DCREATE_TEST_TARGETS=OFF ..
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-  when: inventory_hostname not in no_btf_support
+    - name: Create cmake output dir
+      file:
+        path: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+        state: directory
+        mode: "0755"
+      register: cmake_result
 
-- name: Build kmod
-  shell: |
-    make driver -j {{ cpus }}
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+    - name: Prepare cmake for repository (without modern probe)
+      shell: |
+        cmake -DUSE_BUNDLED_DEPS=ON -DBUILD_LIBSCAP_MODERN_BPF=OFF -DBUILD_LIBSCAP_GVISOR=OFF -DBUILD_BPF=true -DCREATE_TEST_TARGETS=OFF ..
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: cmake_result
+      when: inventory_hostname in no_btf_support
 
-- name: Build scap-open
-  shell: |
-    make scap-open -j {{ cpus }}
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+    - name: Prepare cmake for repository (with modern probe)
+      shell: |
+        cmake -DUSE_BUNDLED_DEPS=ON -DBUILD_LIBSCAP_MODERN_BPF=ON -DBUILD_LIBSCAP_GVISOR=OFF -DBUILD_BPF=true -DCREATE_TEST_TARGETS=OFF ..
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: cmake_result
+      when: inventory_hostname not in no_btf_support
 
-- name: Unload the kernel module
-  shell: |
-    rmmod driver/scap.ko
-  ignore_errors: True
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+  always:
+    - name: Dump error message to file
+      copy: 
+        content: "{{ cmake_result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/cmake-build-directory.json"
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Print error message to stdout
+      debug: 
+        var: cmake_result
 
-- name: Load the kernel module
-  shell: |
-    insmod driver/scap.ko
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+- name: Build scap-open binary
+  block:
+    - name: Build scap-open
+      shell: |
+        make scap-open -j {{ cpus }}
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: scap_open_result
+  always:
+    - name: Dump error message to file
+      copy: 
+        content: "{{ scap_open_result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/build-scap-open-binary.json"
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Print error message to stdout
+      debug: 
+        var: scap_open_result
 
-- name: Run scap-open with kernel module
-  shell: |
-    ./libscap/examples/01-open/scap-open --num_events 50 --kmod
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+- name: Build and load the kernel module
+  block:
+    - name: Unload the kernel module
+      shell: |
+        rmmod driver/scap.ko
+      ignore_errors: True
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
 
-- name: Unload the kernel module
-  shell: |
-    rmmod driver/scap.ko
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+    - name: Build kmod
+      shell: |
+        make driver -j {{ cpus }}
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: km_result
+
+    - name: Load the kernel module
+      shell: |
+        insmod driver/scap.ko
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: km_result
+  always:
+    - name: Dump error message to file
+      copy: 
+        content: "{{ km_result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/build-kernel-module.json"
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Print error message to stdout
+      debug: 
+        var: km_result
+
+- name: Scap open + kernel module
+  block:
+    - name: Run scap-open with kernel module
+      shell: |
+        ./libscap/examples/01-open/scap-open --num_events 50 --kmod
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: result
+
+    - name: Unload the kernel module
+      shell: |
+        rmmod driver/scap.ko
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: result
+  always:
+    - name: Dump error message to file
+      copy: 
+        content: "{{ result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/scap-open-and-kernel-module.json"
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Print error message to stdout
+      debug: 
+        var: result
 
 - name: Build bpf probe
-  shell: |
-    make bpf -j {{ cpus }}
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+  block:
+    - name: Build bpf probe
+      shell: |
+        make bpf -j {{ cpus }}
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: bpf_probe_result
+  always:
+    - name: Dump error message to file
+      copy: 
+        content: "{{ bpf_probe_result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/build-bpf-probe.json"
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Print error message to stdout
+      debug: 
+        var: result
 
-- name: Run scap-open with bpf probe
-  shell: |
-    ./libscap/examples/01-open/scap-open --num_events 50 --bpf driver/bpf/probe.o
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+- name: Scap open + bpf probe
+  block:
+    - name: Run scap-open with bpf probe
+      shell: |
+        ./libscap/examples/01-open/scap-open --num_events 50 --bpf driver/bpf/probe.o
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: result
+  always:
+    - name: Dump error message to file
+      copy: 
+        content: "{{ result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/scap-open-and-bpf-probe.json"
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Print error message to stdout
+      debug: 
+        var: result
 
-- name: Run scap-open with modern-probe
-  shell: |
-    ./libscap/examples/01-open/scap-open --num_events 50 --modern_bpf
-  args:
-    chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-  when: inventory_hostname not in no_btf_support
+- name: Scap-open + modern probe
+  block:
+    - name: Run scap-open with modern-probe
+      shell: |
+        ./libscap/examples/01-open/scap-open --num_events 50 --modern_bpf
+      args:
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: result
+      when: inventory_hostname not in no_btf_support
+  always:
+    - name: Dump error message to file
+      copy: 
+        content: "{{ result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/scap-open-and-modern-probe.json"
+      delegate_to: localhost
+      become: false
+  rescue:
+    - name: Print error message to stdout
+      debug: 
+        var: result

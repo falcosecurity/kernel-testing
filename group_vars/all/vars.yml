@@ -20,25 +20,35 @@ defaultBaserootfs: "therealbobo/ubuntu-rootfs:23.04"
 # rootfs: reference to an OCI image used as base rootfs for the vm.
 # arch: architecture of the kernel and base images. (x86_64/aarch64).
 machines:
-  - {name: "arch-5.18",kernel: "therealbobo/arch-kernel:5.18", rootfs: "therealbobo/arch-image:5.18", arch: "x86_64"}
-  - {name: "arch-6.0",kernel: "therealbobo/arch-kernel:6.0", rootfs: "therealbobo/arch-image:6.0", arch: "x86_64"}
-  - {name: "fedora-38",kernel: "therealbobo/fedora-kernel:38-6.2.9", rootfs: "therealbobo/fedora-image:38-6.2.9", arch: "x86_64"}
-  - {name: "fedora-36",kernel: "therealbobo/fedora-kernel:36-5.17.5", rootfs: "therealbobo/fedora-image:36-5.17.5", arch: "x86_64"}
-  - {name: "fedora-33",kernel: "therealbobo/fedora-kernel:33-5.8.15", rootfs: "therealbobo/fedora-image:33-5.8.15", arch: "x86_64"}
-  - {name: "ubuntu-23.04-6.3.0",kernel: "therealbobo/ubuntu-kernel:23.04-6.3.0", rootfs: "therealbobo/ubuntu-image:23.04-6.3.0", arch: "x86_64"}
-  - {name: "centos-4.18",kernel: "therealbobo/centos-kernel:4.18", rootfs: "therealbobo/centos-image:4.18", arch: "x86_64"}
-  - {name: "centos-5.14",kernel: "therealbobo/centos-kernel:5.14", rootfs: "therealbobo/centos-image:5.14", arch: "x86_64"}
-  - {name: "amz-linux-2023-6.1.34",kernel: "therealbobo/amazonlinux2023-kernel:6.1.34", rootfs: "therealbobo/amazonlinux2023-image:6.1.34", arch: "x86_64"}
-  - {name: "amz-linux-2022-5.15.73",kernel: "therealbobo/amazonlinux2022-kernel:5.15.73", rootfs: "therealbobo/amazonlinux2022-image:5.15.73", arch: "x86_64"}
-  - {name: "amz-linux2-4.19",kernel: "therealbobo/amazonlinux2-kernel:4.19", rootfs: "therealbobo/amazonlinux2-image:4.19", arch: "x86_64"}
-  - {name: "amz-linux2-5.4",kernel: "therealbobo/amazonlinux2-kernel:5.4", rootfs: "therealbobo/amazonlinux2-image:5.4", arch: "x86_64"}
-  - {name: "amz-linux2-5.15",kernel: "therealbobo/amazonlinux2-kernel:5.15", rootfs: "therealbobo/amazonlinux2-image:5.15", arch: "x86_64"}
-  - {name: "oracle-linux-5.15",kernel: "therealbobo/oraclelinux-kernel:5.15", rootfs: "therealbobo/oraclelinux-image:5.15", arch: "x86_64"}
-  - {name: "oracle-linux-5.4",kernel: "therealbobo/oraclelinux-kernel:5.4", rootfs: "therealbobo/oraclelinux-image:5.4", arch: "x86_64"}
-  - {name: "amazonlinux-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-arm64", rootfs: "therealbobo/amazonlinux2-image:5.4-arm64", arch: "aarch64"}
-  - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-arm64", rootfs: "therealbobo/oraclelinux-image:5.15-arm64", arch: "aarch64"}
-
-# Kernel that does not support running execve with null argv: `https://github.com/torvalds/linux/commit/dcd46d897adb70d63e025f175a00a89797d31a43`
+  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-x86_64", rootfs: "therealbobo/amazonlinux2022-image:5.15-x86_64", arch: "x86_64"}
+  - {name: "amazonlinux2023-6.1", kernel: "therealbobo/amazonlinux2023-kernel:6.1-x86_64", rootfs: "therealbobo/amazonlinux2023-image:6.1-x86_64", arch: "x86_64"}
+  - {name: "amazonlinux2-4.19", kernel: "therealbobo/amazonlinux2-kernel:4.19-x86_64", rootfs: "therealbobo/amazonlinux2-image:4.19-x86_64", arch: "x86_64"}
+  - {name: "amazonlinux2-5.10", kernel: "therealbobo/amazonlinux2-kernel:5.10-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.10-x86_64", arch: "x86_64"}
+  - {name: "amazonlinux2-5.15", kernel: "therealbobo/amazonlinux2-kernel:5.15-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.15-x86_64", arch: "x86_64"}
+  - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.4-x86_64", arch: "x86_64"}
+  - {name: "archlinux-5.18", kernel: "therealbobo/archlinux-kernel:5.18-x86_64", rootfs: "therealbobo/archlinux-image:5.18-x86_64", arch: "x86_64"}
+  - {name: "archlinux-6.0", kernel: "therealbobo/archlinux-kernel:6.0-x86_64", rootfs: "therealbobo/archlinux-image:6.0-x86_64", arch: "x86_64"}
+  - {name: "centos-3.10", kernel: "therealbobo/centos-kernel:3.10-x86_64", rootfs: "therealbobo/centos-image:3.10-x86_64", arch: "x86_64"}
+  - {name: "centos-4.18", kernel: "therealbobo/centos-kernel:4.18-x86_64", rootfs: "therealbobo/centos-image:4.18-x86_64", arch: "x86_64"}
+  - {name: "centos-5.14", kernel: "therealbobo/centos-kernel:5.14-x86_64", rootfs: "therealbobo/centos-image:5.14-x86_64", arch: "x86_64"}
+  - {name: "fedora-33", kernel: "therealbobo/fedora-kernel:33-x86_64", rootfs: "therealbobo/fedora-image:33-x86_64", arch: "x86_64"}
+  - {name: "fedora-36", kernel: "therealbobo/fedora-kernel:36-x86_64", rootfs: "therealbobo/fedora-image:36-x86_64", arch: "x86_64"}
+  - {name: "fedora-38", kernel: "therealbobo/fedora-kernel:38-x86_64", rootfs: "therealbobo/fedora-image:38-x86_64", arch: "x86_64"}
+  - {name: "oraclelinux-3.10", kernel: "therealbobo/oraclelinux-kernel:3.10-x86_64", rootfs: "therealbobo/oraclelinux-image:3.10-x86_64", arch: "x86_64"}
+  - {name: "oraclelinux-4.14", kernel: "therealbobo/oraclelinux-kernel:4.14-x86_64", rootfs: "therealbobo/oraclelinux-image:4.14-x86_64", arch: "x86_64"}
+  - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-x86_64", rootfs: "therealbobo/oraclelinux-image:5.15-x86_64", arch: "x86_64"}
+  - {name: "oraclelinux-5.4", kernel: "therealbobo/oraclelinux-kernel:5.4-x86_64", rootfs: "therealbobo/oraclelinux-image:5.4-x86_64", arch: "x86_64"}
+  - {name: "ubuntu-18.04", kernel: "therealbobo/ubuntu-kernel:18.04-x86_64", rootfs: "therealbobo/ubuntu-image:18.04-x86_64", arch: "x86_64"}
+  - {name: "ubuntu-23.04", kernel: "therealbobo/ubuntu-kernel:23.04-x86_64", rootfs: "therealbobo/ubuntu-image:23.04-x86_64", arch: "x86_64"}
+  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-aarch64", rootfs: "therealbobo/amazonlinux2022-image:5.15-aarch64", arch: "aarch64"}
+  - {name: "archlinux-4.14", kernel: "therealbobo/archlinux-kernel:4.14-aarch64", rootfs: "therealbobo/archlinux-image:4.14-aarch64", arch: "aarch64"}
+  - {name: "oraclelinux-4.14", kernel: "therealbobo/oraclelinux-kernel:4.14-aarch64", rootfs: "therealbobo/oraclelinux-image:4.14-aarch64", arch: "aarch64"}
+  - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-aarch64", rootfs: "therealbobo/oraclelinux-image:5.15-aarch64", arch: "aarch64"}
+  - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-aarch64", rootfs: "therealbobo/amazonlinux2-image:5.4-aarch64", arch: "aarch64"}
+  - {name: "fedora-38", kernel: "therealbobo/fedora-kernel:38-aarch64", rootfs: "therealbobo/fedora-image:38-aarch64", arch: "aarch64"}
+  - {name: "ubuntu-23.04", kernel: "therealbobo/ubuntu-kernel:23.04-aarch64", rootfs: "therealbobo/ubuntu-image:23.04-aarch64", arch: "aarch64"}
+# 
+Kernel that does not support running execve with null argv: `https://github.com/torvalds/linux/commit/dcd46d897adb70d63e025f175a00a89797d31a43`
 # We need to disable the tests calling the execve syscall.
 execve_bug_kernels:
   - "5.12.19"
@@ -52,6 +62,8 @@ no_btf_support:
   - "amz-linux2-5.4"
   - "fedora-33"
   - "oracle-linux-5.4"
+
+output_dir: "~/ansible_output"
 # Number of cpus.
 cpus: 2
 # Memory size in GB.
