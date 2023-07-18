@@ -24,7 +24,7 @@ jobs:
     
       - name: Run kernels tests
         run: |
-          ansible-playbook master-playbook.yml --extra-vars "run_id=id-${{ github.run_id }} output_dir=ansible_output_${{ github.run_id }}" || :
+          ansible-playbook master-playbook.yml --extra-vars "run_id=id-${{ github.run_id }} output_dir=~/ansible_output_${{ github.run_id }}" || :
           
       - name: Tar output files
         run: |
@@ -56,6 +56,6 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          ansible-playbook clean-up.yml || :
+          ansible-playbook clean-up.yml --extra-vars "run_id=id-${{ github.run_id }} output_dir=~/ansible_output_${{ github.run_id }}" || :
       
       
