@@ -1,6 +1,8 @@
+[![Drivers Matrix Tests](https://github.com/alacuku/e2e-falco-tests/actions/workflows/kernel_tests.yaml/badge.svg)](https://github.com/alacuku/e2e-falco-tests/actions/workflows/kernel_tests.yaml)
+
 # Falco drivers tests
 
-This repository automatically runs Falco [drivers_test](https://github.com/falcosecurity/libs/tree/master/test/drivers) through Ansible.
+This repository automatically runs Falco [scap-open](https://github.com/falcosecurity/libs/tree/master/userspace/libscap/examples/01-open) binary on all supported drivers through Ansible.
 
 ## Prerequisites
 
