@@ -21,18 +21,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
-      - name: Force set run_id
-        run: |
-          sed -ie 's/here-goes-the-id/${{ github.run_id }}/g' group_vars/all/vars.yml
     
       - name: Run kernels tests
         run: |
-          ansible-playbook master-playbook.yml || :
+          ansible-playbook master-playbook.yml --extra-vars "run_id=id-${{ github.run_id }} output_dir=ansible_output_${{ github.run_id }}" || :
           
       - name: Tar output files
         run: |
-          tar -cvf ansible_output.tar ~/ansible_output
+          tar -cvf ansible_output.tar ~/ansible_output_${{ github.run_id }}
 
       - uses: actions/upload-artifact@v3
         with:
@@ -50,7 +46,7 @@ jobs:
       - name: Generate new matrix
         working-directory: ./matrix_gen
         run: |
-          ./matrix_gen --root-folder ~/ansible_output
+          ./matrix_gen --root-folder ~/ansible_output_${{ github.run_id }}
         
       - uses: actions/upload-artifact@v3
         with:
