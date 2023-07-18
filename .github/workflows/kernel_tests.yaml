@@ -44,10 +44,9 @@ jobs:
         run: ./matrix_gen
         
       - uses: actions/upload-artifact@v3
-        working-directory: matrix_gen
         with:
           name: matrix_${{matrix.architecture}}
-          path: matrix.md
+          path: matrix_gen/matrix.md
           
       - name: Cleanup
         run: |
