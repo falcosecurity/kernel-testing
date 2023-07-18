@@ -27,22 +27,18 @@
         state: directory
         mode: "0755"
       register: cmake_result
+      
+    - name: Check btf support
+      stat:
+        path: /sys/kernel/btf/vmlinux
+      register: btf_support
 
-    - name: Prepare cmake for repository (without modern probe)
+    - name: Prepare cmake for repository
       shell: |
-        cmake -DUSE_BUNDLED_DEPS=ON -DBUILD_LIBSCAP_MODERN_BPF=OFF -DBUILD_LIBSCAP_GVISOR=OFF -DBUILD_BPF=true -DCREATE_TEST_TARGETS=OFF ..
+        cmake -DUSE_BUNDLED_DEPS=ON -DBUILD_LIBSCAP_MODERN_BPF={{ btf_support.stat.exists }} -DBUILD_LIBSCAP_GVISOR=OFF -DBUILD_BPF=true -DCREATE_TEST_TARGETS=OFF ..
       args:
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: cmake_result
-      when: inventory_hostname in no_btf_support
-
-    - name: Prepare cmake for repository (with modern probe)
-      shell: |
-        cmake -DUSE_BUNDLED_DEPS=ON -DBUILD_LIBSCAP_MODERN_BPF=ON -DBUILD_LIBSCAP_GVISOR=OFF -DBUILD_BPF=true -DCREATE_TEST_TARGETS=OFF ..
-      args:
-        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: cmake_result
-      when: inventory_hostname not in no_btf_support
 
   always:
     - name: Dump error message to file
@@ -185,7 +181,7 @@
       args:
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
-      when: inventory_hostname not in no_btf_support
+      when: btf_support.stat.exists
   always:
     - name: Dump error message to file
       copy: 
