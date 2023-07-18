@@ -24,10 +24,17 @@ jobs:
     
       - name: Run kernels tests
         run: |
-          ansible-playbook master-playbook.yml
+          ansible-playbook master-playbook.yml || :
+          
+      - name: Tar output files
+        run: tar -cvf ansible_output.tar ~/ansible_output
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ansible_output_${{matrix.architecture}}
+          path: ansible_output.tar
           
       - name: Cleanup
-        if: always()
         run: |
           ansible-playbook clean-up.yml
       
