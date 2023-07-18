@@ -46,7 +46,7 @@ jobs:
       - name: Generate new matrix
         working-directory: ./matrix_gen
         run: |
-          ./matrix_gen
+          ./matrix_gen --root-folder ~/ansible_output
         
       - uses: actions/upload-artifact@v3
         with:
