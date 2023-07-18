@@ -31,22 +31,22 @@ machines:
   - {name: "centos-3.10", kernel: "therealbobo/centos-kernel:3.10-x86_64", rootfs: "therealbobo/centos-image:3.10-x86_64", arch: "x86_64"}
   - {name: "centos-4.18", kernel: "therealbobo/centos-kernel:4.18-x86_64", rootfs: "therealbobo/centos-image:4.18-x86_64", arch: "x86_64"}
   - {name: "centos-5.14", kernel: "therealbobo/centos-kernel:5.14-x86_64", rootfs: "therealbobo/centos-image:5.14-x86_64", arch: "x86_64"}
-  - {name: "fedora-33", kernel: "therealbobo/fedora-kernel:33-x86_64", rootfs: "therealbobo/fedora-image:33-x86_64", arch: "x86_64"}
-  - {name: "fedora-36", kernel: "therealbobo/fedora-kernel:36-x86_64", rootfs: "therealbobo/fedora-image:36-x86_64", arch: "x86_64"}
-  - {name: "fedora-38", kernel: "therealbobo/fedora-kernel:38-x86_64", rootfs: "therealbobo/fedora-image:38-x86_64", arch: "x86_64"}
+  - {name: "fedora-5.17", kernel: "therealbobo/fedora-kernel:5.17-x86_64", rootfs: "therealbobo/fedora-image:5.17-x86_64", arch: "x86_64"}
+  - {name: "fedora-5.8", kernel: "therealbobo/fedora-kernel:5.8-x86_64", rootfs: "therealbobo/fedora-image:5.8-x86_64", arch: "x86_64"}
+  - {name: "fedora-6.2", kernel: "therealbobo/fedora-kernel:6.2-x86_64", rootfs: "therealbobo/fedora-image:6.2-x86_64", arch: "x86_64"}
   - {name: "oraclelinux-3.10", kernel: "therealbobo/oraclelinux-kernel:3.10-x86_64", rootfs: "therealbobo/oraclelinux-image:3.10-x86_64", arch: "x86_64"}
   - {name: "oraclelinux-4.14", kernel: "therealbobo/oraclelinux-kernel:4.14-x86_64", rootfs: "therealbobo/oraclelinux-image:4.14-x86_64", arch: "x86_64"}
   - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-x86_64", rootfs: "therealbobo/oraclelinux-image:5.15-x86_64", arch: "x86_64"}
   - {name: "oraclelinux-5.4", kernel: "therealbobo/oraclelinux-kernel:5.4-x86_64", rootfs: "therealbobo/oraclelinux-image:5.4-x86_64", arch: "x86_64"}
-  - {name: "ubuntu-18.04", kernel: "therealbobo/ubuntu-kernel:18.04-x86_64", rootfs: "therealbobo/ubuntu-image:18.04-x86_64", arch: "x86_64"}
-  - {name: "ubuntu-23.04", kernel: "therealbobo/ubuntu-kernel:23.04-x86_64", rootfs: "therealbobo/ubuntu-image:23.04-x86_64", arch: "x86_64"}
+  - {name: "ubuntu-4.15", kernel: "therealbobo/ubuntu-kernel:4.15-x86_64", rootfs: "therealbobo/ubuntu-image:4.15-x86_64", arch: "x86_64"}
+  - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-x86_64", rootfs: "therealbobo/ubuntu-image:6.3-x86_64", arch: "x86_64"}
   - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-aarch64", rootfs: "therealbobo/amazonlinux2022-image:5.15-aarch64", arch: "aarch64"}
+  - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-aarch64", rootfs: "therealbobo/amazonlinux2-image:5.4-aarch64", arch: "aarch64"}
   - {name: "archlinux-4.14", kernel: "therealbobo/archlinux-kernel:4.14-aarch64", rootfs: "therealbobo/archlinux-image:4.14-aarch64", arch: "aarch64"}
+  - {name: "fedora-6.2", kernel: "therealbobo/fedora-kernel:6.2-aarch64", rootfs: "therealbobo/fedora-image:6.2-aarch64", arch: "aarch64"}
   - {name: "oraclelinux-4.14", kernel: "therealbobo/oraclelinux-kernel:4.14-aarch64", rootfs: "therealbobo/oraclelinux-image:4.14-aarch64", arch: "aarch64"}
   - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-aarch64", rootfs: "therealbobo/oraclelinux-image:5.15-aarch64", arch: "aarch64"}
-  - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-aarch64", rootfs: "therealbobo/amazonlinux2-image:5.4-aarch64", arch: "aarch64"}
-  - {name: "fedora-38", kernel: "therealbobo/fedora-kernel:38-aarch64", rootfs: "therealbobo/fedora-image:38-aarch64", arch: "aarch64"}
-  - {name: "ubuntu-23.04", kernel: "therealbobo/ubuntu-kernel:23.04-aarch64", rootfs: "therealbobo/ubuntu-image:23.04-aarch64", arch: "aarch64"}
+  - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-aarch64", rootfs: "therealbobo/ubuntu-image:6.3-aarch64", arch: "aarch64"}
 
 # List of machines where we do not compile the modern-probe.
 no_btf_support:
