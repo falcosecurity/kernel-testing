@@ -23,8 +23,7 @@ jobs:
         uses: actions/checkout@v3
     
       - name: Run kernels tests
-        run: |
-          ansible-playbook master-playbook.yml || :
+        run: ansible-playbook master-playbook.yml || :
           
       - name: Tar output files
         run: tar -cvf ansible_output.tar ~/ansible_output
@@ -34,8 +33,21 @@ jobs:
           name: ansible_output_${{matrix.architecture}}
           path: ansible_output.tar
           
+      - name: Build matrix_gen
+        working-directory: matrix_gen
+        run: go build .
+        
+      - name: Generate new matrix
+        working-directory: matrix_gen
+        run: ./matrix_gen
+        
+      - uses: actions/upload-artifact@v3
+        working-directory: matrix_gen
+        with:
+          name: matrix_${{matrix.architecture}}
+          path: matrix.md
+          
       - name: Cleanup
-        run: |
-          ansible-playbook clean-up.yml
+        run: ansible-playbook clean-up.yml  
       
       
