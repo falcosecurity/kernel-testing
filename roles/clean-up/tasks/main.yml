@@ -48,7 +48,7 @@
   block:
     - name: List cached images
       shell:
-       cmd: ignite images ls | tail +2 | cut -f 1 
+       cmd: ignite images ls -q
       register: images
     
     - name: Remove cached images from ignite
@@ -58,7 +58,7 @@
       
     - name: List cached kernels
       shell:
-       cmd: ignite kernel ls | tail +2 | cut -f 1 
+       cmd: ignite kernel ls -q
       register: kernels
     
     - name: Remove cached kernels from ignite
@@ -66,6 +66,7 @@
        cmd: ignite kernel rm {{ item }}
       loop: "{{ kernels.stdout_lines }}"
   become: true
+  ignore_errors: true
 
 - name: Remove the files directory in the bootstrap role
   file:
