@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -17,7 +18,8 @@ var (
 )
 
 type testResult struct {
-	Rc matrixEntryResult `json:"rc"`
+	Rc      matrixEntryResult `json:"rc"`
+	Skipped bool              `json:"skipped"`
 }
 
 type matrixEntryResult int
@@ -46,6 +48,9 @@ func loadTestResult(path string) matrixEntryResult {
 	res := testResult{}
 
 	_ = json.Unmarshal(file, &res)
+	if res.Skipped {
+		return matrixEntryResultSkip
+	}
 	if res.Rc != 0 {
 		return matrixEntryResultFail
 	}
@@ -83,11 +88,22 @@ func (m matrixOutput) Store() {
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 
-	for kernel, tests := range m.entries {
-		data := make([]string, len(tests)+1)
-		data[0] = kernel
-		var idx = 1
-		for testName, _ := range m.testList {
+	// Sort by kernel
+	kernels := make([]string, 0, len(m.entries))
+	for k := range m.entries {
+		kernels = append(kernels, k)
+	}
+	sort.Strings(kernels)
+
+	for _, kernel := range kernels {
+		tests := m.entries[kernel]
+		data := make([]string, len(headers))
+		for idx, testName := range headers {
+			if idx == 0 {
+				data[idx] = kernel
+				continue
+			}
+			// This should never happen; leave this in case.
 			testRes := matrixEntryResultSkip
 			if _, ok := tests[testName]; ok {
 				testRes = tests[testName]
@@ -96,9 +112,9 @@ func (m matrixOutput) Store() {
 			case matrixEntryResultOK:
 				data[idx] = "🟢"
 			case matrixEntryResultFail:
-				data[idx] = "🟡"
+				data[idx] = "❌"
 			case matrixEntryResultSkip:
-				data[idx] = " "
+				data[idx] = "🟡"
 			}
 			idx++
 		}
