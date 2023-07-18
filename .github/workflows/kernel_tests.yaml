@@ -21,6 +21,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
+      - name: Force set run_id
+        run: |
+          sed -ie 's/here-goes-the-id/${{ github.run_id }}/g' group_vars/all/vars.yml
     
       - name: Run kernels tests
         run: |
