@@ -34,14 +34,19 @@ jobs:
         with:
           name: ansible_output_${{matrix.architecture}}
           path: ansible_output.tar
-          
+    
       - name: Build matrix_gen
         working-directory: ./matrix_gen
-        run: go build .
+        env:
+          GOPATH: /root/go
+          GOCACHE: /root/.cache/go-build
+        run: |
+          go build .
         
       - name: Generate new matrix
         working-directory: ./matrix_gen
-        run: ./matrix_gen
+        run: |
+          ./matrix_gen
         
       - uses: actions/upload-artifact@v3
         with:
@@ -49,6 +54,7 @@ jobs:
           path: ./matrix_gen/matrix.md
           
       - name: Cleanup
+        if: always()
         run: |
           ansible-playbook clean-up.yml || :
       
