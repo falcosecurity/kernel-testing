@@ -24,7 +24,7 @@ jobs:
     
       - name: Run kernels tests
         run: |
-          ansible-playbook master-playbook.yml || :
+          ansible-playbook master-playbook.yml --extra-vars "run_id={{ github.run_id }}" || :
           
       - name: Tar output files
         run: |
