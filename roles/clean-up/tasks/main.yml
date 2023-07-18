@@ -77,3 +77,8 @@
   file:
     path: "./inventory.ini"
     state: absent
+    
+- name: Remove ansible output folder
+  file:
+    path: "{{ output_dir }}"
+    state: absent
