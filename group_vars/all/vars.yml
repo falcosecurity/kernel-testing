@@ -48,18 +48,6 @@ machines:
   - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-aarch64", rootfs: "therealbobo/oraclelinux-image:5.15-aarch64", arch: "aarch64"}
   - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-aarch64", rootfs: "therealbobo/ubuntu-image:6.3-aarch64", arch: "aarch64"}
 
-# List of machines where we do not compile the modern-probe.
-no_btf_support:
-  - "amazonlinux2-4.19"
-  - "amazonlinux2-5.4"
-  - "centos-3.10"
-  - "centos-4.18"
-  - "oraclelinux-3.10"
-  - "oraclelinux-4.14"
-  - "oraclelinux-5.4"
-  - "ubuntu-18.04"
-  - "archlinux-4.14"
-
 output_dir: "~/ansible_output"
 # Number of cpus.
 cpus: 2
