@@ -42,7 +42,7 @@ ansible-playbook master-playbook.yml --ask-become
 To rerun tests:
 
 ```bash
-ansible-playbook modern-bpf-test.yml --ask-become 
+ansible-playbook scap-open-test.yml --ask-become 
 ```
 
 ## Clean-up all machines
