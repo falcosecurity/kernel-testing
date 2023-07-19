@@ -3,16 +3,12 @@
 # Time in seconds to wait for the hosts to be available after the virtual machines are newly created.
 time_out: 600
 
-#user used to log in to virtual machine and used to administer the cluster through cli tools
-remote_user: root 
+# User used to log in to virtual machine and used to administer the cluster through cli tools
+user: root
 
 #########################
 # Machine Configuration #
 #########################
-
-# The default base rootfs for the VMs. We have a dedicated variable here since it is static.
-# If you need to match a given kernel with a specific base rootfs then change it in the machine entry.
-defaultBaserootfs: "therealbobo/ubuntu-rootfs:23.04"
 
 # Each machine entry requires the following fields
 # name: the name given to the vm;
@@ -20,8 +16,8 @@ defaultBaserootfs: "therealbobo/ubuntu-rootfs:23.04"
 # rootfs: reference to an OCI image used as base rootfs for the vm.
 # arch: architecture of the kernel and base images. (x86_64/aarch64).
 machines:
-  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-x86_64", rootfs: "therealbobo/amazonlinux2022-image:5.15-x86_64", arch: "x86_64"}
-  - {name: "amazonlinux2023-6.1", kernel: "therealbobo/amazonlinux2023-kernel:6.1-x86_64", rootfs: "therealbobo/amazonlinux2023-image:6.1-x86_64", arch: "x86_64"}
+  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-x86_64", rootfs: "therealbobo/amazonlinux2022-image:5.15-x86_64", arch: "x86_64"}  # noqa: yaml[line-length]
+  - {name: "amazonlinux2023-6.1", kernel: "therealbobo/amazonlinux2023-kernel:6.1-x86_64", rootfs: "therealbobo/amazonlinux2023-image:6.1-x86_64", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "amazonlinux2-4.19", kernel: "therealbobo/amazonlinux2-kernel:4.19-x86_64", rootfs: "therealbobo/amazonlinux2-image:4.19-x86_64", arch: "x86_64"}
   - {name: "amazonlinux2-5.10", kernel: "therealbobo/amazonlinux2-kernel:5.10-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.10-x86_64", arch: "x86_64"}
   - {name: "amazonlinux2-5.15", kernel: "therealbobo/amazonlinux2-kernel:5.15-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.15-x86_64", arch: "x86_64"}
@@ -40,7 +36,7 @@ machines:
   - {name: "oraclelinux-5.4", kernel: "therealbobo/oraclelinux-kernel:5.4-x86_64", rootfs: "therealbobo/oraclelinux-image:5.4-x86_64", arch: "x86_64"}
   - {name: "ubuntu-4.15", kernel: "therealbobo/ubuntu-kernel:4.15-x86_64", rootfs: "therealbobo/ubuntu-image:4.15-x86_64", arch: "x86_64"}
   - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-x86_64", rootfs: "therealbobo/ubuntu-image:6.3-x86_64", arch: "x86_64"}
-  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-aarch64", rootfs: "therealbobo/amazonlinux2022-image:5.15-aarch64", arch: "aarch64"}
+  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-aarch64", rootfs: "therealbobo/amazonlinux2022-image:5.15-aarch64", arch: "aarch64"}  # noqa: yaml[line-length]
   - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-aarch64", rootfs: "therealbobo/amazonlinux2-image:5.4-aarch64", arch: "aarch64"}
   # - {name: "archlinux-4.14", kernel: "therealbobo/archlinux-kernel:4.14-aarch64", rootfs: "therealbobo/archlinux-image:4.14-aarch64", arch: "aarch64"}
   - {name: "fedora-6.2", kernel: "therealbobo/fedora-kernel:6.2-aarch64", rootfs: "therealbobo/fedora-image:6.2-aarch64", arch: "aarch64"}
@@ -61,30 +57,30 @@ run_id: "here-goes-the-id"
 # SSH configuration #
 #####################
 
-#Path to the generated SSH private key file
+# Path to the generated SSH private key file
 ssh_key_path: "/root/.ssh/"
 ssh_key_name: ignite_machines
 
-#Path to the private key
-prv_key_path: "{{ssh_key_path}}/{{ssh_key_name}}"
+# Path to the private key
+prv_key_path: "{{ ssh_key_path }}/{{ ssh_key_name }}"
 
-#path to the public key used to ssh to the machines, if this key does not exist then a new one is generated with the same name
-pub_key_path: "{{ssh_key_path}}/{{ssh_key_name}}.pub"
+# Path to the public key used to ssh to the machines, if this key does not exist then a new one is generated with the same name
+pub_key_path: "{{ ssh_key_path }}/{{ ssh_key_name }}.pub"
 
 
 # Repositories to be cloned on the local machine and copied to the VMs
 # Each repos entry requires the following fields:
 # name: the folder name where the repo will be cloned. Root folder under ./roles/git-repos/files/repos
 # repo: git, SSH, or HTTP(S) protocol address of the git repository;
-# version: What version of the repository to check out. This can be the literal string HEAD, 
-# a branch name, a tag name. It can also be a SHA-1 hash, in which case refspec needs to be 
+# version: What version of the repository to check out. This can be the literal string HEAD,
+# a branch name, a tag name. It can also be a SHA-1 hash, in which case refspec needs to be
 # specified if the given revision is not already available. If not set the default value is "HEAD".
-# refspec: Add an additional refspec to be fetched. If version is set to a SHA-1 not reachable 
-# from any branch or tag, this option may be necessary to specify the ref containing the SHA-1. 
+# refspec: Add an additional refspec to be fetched. If version is set to a SHA-1 not reachable
+# from any branch or tag, this option may be necessary to specify the ref containing the SHA-1.
 # Uses the same syntax as the git fetch command. An example value could be “refs/meta/config”.
 # Docs ref: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/git_module.html
 repos:
- libs: {name: "falcosecurity-libs", repo: "https://github.com/falcosecurity/libs.git", version: "0.11.3"}
+  libs: {name: "falcosecurity-libs", repo: "https://github.com/falcosecurity/libs.git", version: "0.11.3"}
 
 local_repos_folder: "./roles/git_repos/files/repos"
 remote_repos_folder: "/root"

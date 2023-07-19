@@ -5,7 +5,7 @@
 - name: Play that clones git repositories and pushes them to VMs
   hosts: all
   gather_facts: false
-  remote_user: "{{ remote_user }}"
+  remote_user: "{{ user }}"
   become: false
   serial: 30
   roles:
