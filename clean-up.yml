@@ -1,8 +1,0 @@
----
-# Playbook used to remove the cluster and clean up generated files. 
-# Check the role for more information
-- hosts: localhost
-  become: no
-  roles:
-   - clean-up
-   

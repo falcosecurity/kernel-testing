@@ -1,0 +1,8 @@
+---
+# Playbook used to remove the cluster and clean up generated files.
+# Check the role for more information
+- name: Play that removes the vms and other files created by the other playbooks
+  hosts: localhost
+  become: false
+  roles:
+   - clean_up
