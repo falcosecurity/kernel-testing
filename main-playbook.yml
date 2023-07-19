@@ -1,0 +1,9 @@
+---
+# Main playbook to run once the whole configuration.
+# Check the specific playbooks and roles to have more information.
+- name: Include bootstrap playbook
+  import_playbook: bootstrap.yml
+- name: Include git-repos playbook
+  import_playbook: git-repos.yml
+- name: Include scap-open playbook
+  import_playbook: scap-open.yml
