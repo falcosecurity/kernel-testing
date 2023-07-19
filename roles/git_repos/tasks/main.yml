@@ -2,18 +2,17 @@
 # tasks file for git-repos
 
 - name: Cloning git repositories on local machine
-  git:
+  ansible.builtin.git:
     repo: "{{ item.value.repo | mandatory }}"
     version: "{{ item.value.version | default(omit) }}"
     refspec: "{{ item.value.refspec | default(omit) }}"
     dest: "{{ local_repos_folder }}/{{ item.value.name | mandatory }}"
   with_dict: "{{ repos }}"
   delegate_to: localhost
-  throttle: 1
   run_once: true
 
 - name: Copy all git repositories to the VMs
-  synchronize:
+  ansible.posix.synchronize:
     src: repos
     dest: "{{ remote_repos_folder }}"
     private_key: "{{ prv_key_path }}"

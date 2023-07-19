@@ -86,5 +86,5 @@ pub_key_path: "{{ssh_key_path}}/{{ssh_key_name}}.pub"
 repos:
  libs: {name: "falcosecurity-libs", repo: "https://github.com/falcosecurity/libs.git", version: "0.11.3"}
 
-local_repos_folder: "./roles/git-repos/files/repos"
+local_repos_folder: "./roles/git_repos/files/repos"
 remote_repos_folder: "/root"
