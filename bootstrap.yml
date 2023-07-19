@@ -1,8 +1,8 @@
 ---
-# Playbook used to configure the files before launching the vagrant environment
+# Playbook used to generate the vm configuration files and start them using ignite tool.
 # Check the role for more information
-- hosts: localhost
-  become: no
+- name: Play for creating virtual machines
+  hosts: localhost
+  become: false
   roles:
    - bootstrap
-   
