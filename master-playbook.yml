@@ -2,6 +2,5 @@
 # Master playbook to run once the whole configuration.
 # Check the specific playbooks and roles to have more information.
 - import_playbook: bootstrap.yml
-#- import_playbook: modern-bpf-test.yml
 - import_playbook: git_repos.yml
-- import_playbook: scap-open-test.yml
+- import_playbook: scap_open.yml
