@@ -2,10 +2,11 @@
 # target nodes. We want to avoid downloading the same repos on multiple
 # target nodes.
 # Check the role for more information
-- hosts: all
-  gather_facts: no
+- name: Play that clones git repositories and pushes them to VMs
+  hosts: all
+  gather_facts: false
   remote_user: "{{ remote_user }}"
-  become: no
+  become: false
   serial: 30
   roles:
-    - git-repos
+    - git_repos
