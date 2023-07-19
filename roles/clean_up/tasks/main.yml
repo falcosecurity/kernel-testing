@@ -3,13 +3,13 @@
 # this role removes the cluster and the files created by the bootstrap role
 
 - name: Find and save in a local variable all machines config files
-  find:
+  ansible.builtin.find:
     paths: ./roles/bootstrap/files
     patterns: "*.yaml"
   register: files_to_delete
 
 - name: Delete all the machine config files files
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: absent
   with_items: "{{ files_to_delete.files }}"
@@ -18,67 +18,75 @@
 # We search all the machines created for this run_id.
 # We make sure that all machines are stopped and then delete them.
 - name: Stop running machines and delete them
+  become: true
   block:
     - name: Get name of running machines run_id={{ run_id }}
-      shell:
+      ansible.builtin.command:
         cmd: ignite ps --all -f \{\{.Labels.run\}\}={{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Name\}\}
       register: vms
+      changed_when: false
 
     - name: Stop running machines run_id={{ run_id }}
-      shell:
-       cmd: ignite kill {{item}}
+      ansible.builtin.command:
+        cmd: ignite kill {{ item }}
       loop: "{{ vms.stdout_lines }}"
+      changed_when: false
 
     - name: Get name of stopped machines run_id={{ run_id }}
-      shell:
+      ansible.builtin.command:
         cmd: ignite ps --all -f \{\{.Labels.run\}\}={{ run_id }} -t \{\{.Name\}\}
       register: vms
+      changed_when: false
 
     - name: Delete machines run_id={{ run_id }}
-      shell:
-       cmd: ignite rm {{ item }}
+      ansible.builtin.command:
+        cmd: ignite rm {{ item }}
       loop: "{{ vms.stdout_lines }}"
-  become: true
+      changed_when: false
 
 # Ignite imports the images from the OCI ones and caches them.
 # If the images change in the remote repository, ignite continues to use
 # the cached ones. During the clean phase, we make sure to remove them from
 # the cache.
 - name: Remove rootfs and kernel images from ignite cache
+  become: true
+  ignore_errors: true  # noqa: ignore-errors
   block:
     - name: List cached images
-      shell:
-       cmd: ignite images ls -q
+      ansible.builtin.command:
+        cmd: ignite images ls -q
       register: images
-    
+      changed_when: false
+
     - name: Remove cached images from ignite
-      shell:
-       cmd: ignite image rm {{ item }}
+      ansible.builtin.command:
+        cmd: ignite image rm {{ item }}
       loop: "{{ images.stdout_lines }}"
-      
+      changed_when: false
+
     - name: List cached kernels
-      shell:
-       cmd: ignite kernel ls -q
+      ansible.builtin.command:
+        cmd: ignite kernel ls -q
       register: kernels
-    
+      changed_when: false
+
     - name: Remove cached kernels from ignite
-      shell:
-       cmd: ignite kernel rm {{ item }}
+      ansible.builtin.command:
+        cmd: ignite kernel rm {{ item }}
       loop: "{{ kernels.stdout_lines }}"
-  become: true
-  ignore_errors: true
+      changed_when: false
 
 - name: Remove the files directory in the bootstrap role
-  file:
+  ansible.builtin.file:
     path: "./roles/bootstrap/files"
     state: absent
 
 - name: Remove the inventory.ini file
-  file:
+  ansible.builtin.file:
     path: "./inventory.ini"
     state: absent
-    
+
 - name: Remove ansible output folder
-  file:
+  ansible.builtin.file:
     path: "{{ output_dir }}"
     state: absent
