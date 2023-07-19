@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 var (
@@ -34,7 +35,7 @@ type matrixEntry map[string]matrixEntryResult
 
 type matrixOutput struct {
 	entries  map[string]matrixEntry
-	testList map[string]struct{}
+	testList map[string]time.Time
 }
 
 func init() {
@@ -70,6 +71,28 @@ func (m matrixOutput) addTestResult(path string) {
 	m.entries[machineName] = matrixentry
 }
 
+func (m matrixOutput) loadSortTestByModTime() []string {
+	type kv struct {
+		Key   string
+		Value time.Time
+	}
+
+	ss := make([]kv, 0, len(m.testList))
+	for k, v := range m.testList {
+		ss = append(ss, kv{k, v})
+	}
+
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Value.Before(ss[j].Value)
+	})
+
+	testList := make([]string, 0, len(m.testList))
+	for _, val := range ss {
+		testList = append(testList, val.Key)
+	}
+	return testList
+}
+
 func (m matrixOutput) Store() {
 	fW, err := os.Create(*outputFile)
 	if err != nil {
@@ -77,13 +100,16 @@ func (m matrixOutput) Store() {
 	}
 	defer fW.Close()
 
-	table := tablewriter.NewWriter(fW)
+	// Load sorted by mod time test list, so that they appear
+	// in correct order
+	testList := m.loadSortTestByModTime()
 
 	headers := []string{"Kernel"}
-	for testName, _ := range m.testList {
+	for _, testName := range testList {
 		headers = append(headers, testName)
 	}
 
+	table := tablewriter.NewWriter(fW)
 	table.SetHeader(headers)
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
@@ -128,7 +154,7 @@ func main() {
 
 	matrix := matrixOutput{
 		entries:  make(map[string]matrixEntry),
-		testList: make(map[string]struct{}),
+		testList: make(map[string]time.Time),
 	}
 
 	err := filepath.WalkDir(*rootFolder, func(path string, d fs.DirEntry, err error) error {
@@ -137,7 +163,8 @@ func main() {
 
 			testName := strings.TrimSuffix(d.Name(), ".json")
 			if _, ok := matrix.testList[testName]; !ok {
-				matrix.testList[testName] = struct{}{}
+				info, _ := d.Info()
+				matrix.testList[testName] = info.ModTime()
 			}
 		}
 		return nil
