@@ -80,7 +80,7 @@ pub_key_path: "{{ ssh_key_path }}/{{ ssh_key_name }}.pub"
 # Uses the same syntax as the git fetch command. An example value could be “refs/meta/config”.
 # Docs ref: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/git_module.html
 repos:
-  libs: {name: "falcosecurity-libs", repo: "https://github.com/falcosecurity/libs.git", version: "0.11.3"}
+  libs: {name: "falcosecurity-libs", repo: "https://github.com/falcosecurity/libs.git", version: "master"}
 
 local_repos_folder: "./roles/git_repos/files/repos"
 remote_repos_folder: "/root"
