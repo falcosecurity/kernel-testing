@@ -46,12 +46,12 @@ jobs:
       - name: Generate new matrix
         working-directory: ./matrix_gen
         run: |
-          ./matrix_gen --root-folder ~/ansible_output_${{ github.run_id }}
+          ./matrix_gen --root-folder ~/ansible_output_${{ github.run_id }} --output-file matrix_${{matrix.architecture}}.md
         
       - uses: actions/upload-artifact@v3
         with:
           name: matrix_${{matrix.architecture}}
-          path: ./matrix_gen/matrix.md
+          path: ./matrix_gen/matrix_${{matrix.architecture}}.md
           
       - name: Cleanup
         if: always()
