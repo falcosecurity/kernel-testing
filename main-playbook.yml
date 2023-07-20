@@ -3,6 +3,8 @@
 # Check the specific playbooks and roles to have more information.
 - name: Include bootstrap playbook
   import_playbook: bootstrap.yml
+- name: Include common playbook
+  import_playbook: common.yml
 - name: Include git-repos playbook
   import_playbook: git-repos.yml
 - name: Include scap-open playbook
