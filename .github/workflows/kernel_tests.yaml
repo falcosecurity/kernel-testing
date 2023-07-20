@@ -2,6 +2,12 @@ name: Test drivers against a matrix of kernels/distros
 
 on:
   workflow_dispatch:
+    inputs:
+      libsversion:
+        description: libs version to be tested
+        type: string
+        required: false
+        default: master
   schedule:
     - cron: '0 8 * * *' # every day at 8am
     
@@ -21,10 +27,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
+      - name: Generate vars yaml
+        run: |
+          LIBS_V=${{ github.event.inputs.libsversion }}
+          LIBS_VERSION=${LIBS_V:-"master"}
+          cat > vars.yml <<EOF
+          run_id: "id-${{ github.run_id }}"
+          output_dir: "~/ansible_output_${{ github.run_id }}"
+          repos:
+            libs: {name: "falcosecurity-libs", repo: "https://github.com/falcosecurity/libs.git", version: "$LIBS_VERSION"}
+          EOF
     
       - name: Run kernels tests
         run: |
-          ansible-playbook main-playbook.yml --extra-vars "run_id=id-${{ github.run_id }} output_dir=~/ansible_output_${{ github.run_id }}" || :
+          ansible-playbook main-playbook.yml --extra-vars "@vars.yml" || :
           
       - name: Tar output files
         run: |
@@ -56,6 +73,4 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          ansible-playbook clean-up.yml --extra-vars "run_id=id-${{ github.run_id }} output_dir=~/ansible_output_${{ github.run_id }}" || :
-      
-      
+          ansible-playbook clean-up.yml --extra-vars "@vars.yml" || :
