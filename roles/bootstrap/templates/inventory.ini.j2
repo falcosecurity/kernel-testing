@@ -5,3 +5,10 @@
 {{ result.item.name }} ansible_host={{ result.stdout }} ansible_ssh_private_key_file={{ prv_key_path }}
 {% endif%}
 {% endfor %}
+
+[builders]
+{% for result in builders_ips.results %}
+{% if "skipped" not in result %}
+{{ result.item.name }} ansible_host={{ result.stdout }} ansible_ssh_private_key_file={{ prv_key_path }}
+{% endif%}
+{% endfor %}

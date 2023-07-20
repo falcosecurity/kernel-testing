@@ -23,7 +23,7 @@
     state: directory
     mode: '0755'
 
-- name: Template the ignite-vm.yaml configuratin file
+- name: Template the ignite-vm.yaml configuratin file for machines
   ansible.builtin.template:
     src: ignite-vm.yaml.j2
     dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
@@ -31,7 +31,16 @@
   loop:
     "{{ machines }}"
   when: item.arch == ansible_facts["architecture"]
+  delegate_to: localhost
 
+- name: Template the ignite-vm.yaml configuratin file for builders
+  ansible.builtin.template:
+    src: ignite-vm.yaml.j2
+    dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
+    mode: '0755'
+  loop:
+    "{{ builders }}"
+  when: item.arch == ansible_facts["architecture"]
   delegate_to: localhost
 
 - name: Pull kernel and rootfs OCI images
@@ -40,14 +49,16 @@
       community.docker.docker_image:
         name: "{{ item.kernel }}"
         source: pull
-      loop: "{{ machines }}"
+        force_source: true
+      loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts["architecture"]
 
     - name: Pull rootfs OCI images
       community.docker.docker_image:
         name: "{{ item.rootfs }}"
         source: pull
-      loop: "{{ machines }}"
+        force_source: true
+      loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts["architecture"]
 
 - name: Create virtual machines run_id={{ run_id }}
@@ -55,7 +66,7 @@
     cmd: ignite run --config "./roles/bootstrap/files/{{ item.name }}.yaml" --runtime docker
   register: ignite_run
   changed_when: ignite_run.rc == 0
-  loop: "{{ machines }}"
+  loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts["architecture"]
   become: true
 
@@ -67,18 +78,28 @@
   until: result.stdout | int == 2
   retries: 5
   delay: 10
-  loop: "{{ machines }}"
+  loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts["architecture"]
   changed_when: result.stdout | int == 2
   become: true
 
-- name: Get IP of the VMs and register them in a variable run_id={{ run_id }}
+- name: Get IP of the VMs(machines) and register them in a variable run_id={{ run_id }}
   ansible.builtin.command:
     cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }}-{{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Status.Network.IPAddresses\}\}
   register: machine_ips
   failed_when: machine_ips.stdout_lines | length != 1
   changed_when: machine_ips.stdout_lines | length == 1
   loop: "{{ machines }}"
+  when: item.arch == ansible_facts["architecture"]
+  become: true
+
+- name: Get IP of the VMs(builders) and register them in a variable run_id={{ run_id }}
+  ansible.builtin.command:
+    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }}-{{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Status.Network.IPAddresses\}\}
+  register: builders_ips
+  failed_when: builders_ips.stdout_lines | length != 1
+  changed_when: builders_ips.stdout_lines | length == 1
+  loop: "{{ builders }}"
   when: item.arch == ansible_facts["architecture"]
   become: true
 
