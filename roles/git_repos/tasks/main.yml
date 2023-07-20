@@ -16,3 +16,11 @@
     src: repos
     dest: "{{ remote_repos_folder }}"
     private_key: "{{ prv_key_path }}"
+
+- name: Remove repositories from localhost
+  ansible.builtin.file:
+    path: "{{ local_repos_folder }}/{{ item.value.name | mandatory }}"
+    state: absent
+  with_dict: "{{ repos }}"
+  delegate_to: localhost
+  run_once: true
