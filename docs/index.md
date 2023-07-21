@@ -24,7 +24,7 @@ For now, supported architectures are:
 ## Glossary
 
 * 🟢 -> means that the test was successful
-* 🟡 -> means that the test was skipped
-* ❌ -> means that the test failed
+* 🟡 -> means that the test was skipped; you can click the symbol to reach the test section and checkout why the test was skipped.
+* ❌ -> means that the test failed; you can click the symbol to reach the test section and checkout why the test failed.
 
 
