@@ -1,0 +1,6 @@
+---
+modern_bpf_supported: false
+bpf_supported: false
+bpf_minimum_kver:
+  aarch64: '4.17'
+  x86_64: '4.14'

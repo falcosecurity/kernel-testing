@@ -13,6 +13,43 @@
         path: "{{ output_dest_dir }}"
         state: directory
         mode: '0755'
+        
+- name: Check Modern Bpf Support
+  block:
+    - name: Check BTF support
+      ansible.builtin.stat:
+        path: /sys/kernel/btf/vmlinux
+      register: btf_support
+
+    - name: Look up for BPF_MAP_TYPE_RINGBUF
+      ansible.builtin.lineinfile:
+        path: /usr/include/linux/bpf.h
+        regex: BPF_MAP_TYPE_RINGBUF*
+        state: absent
+      changed_when: false
+      check_mode: 'yes'
+      register: ringbuf_present
+
+    - name: Look up for BPF_PROG_TYPE_TRACING
+      ansible.builtin.lineinfile:
+        path: /usr/include/linux/bpf.h
+        regex: BPF_PROG_TYPE_TRACING*
+        state: absent
+      changed_when: false
+      check_mode: 'yes'
+      register: tracing_present
+
+    - name: Enable Modern Bpf support
+      ansible.builtin.set_fact:
+        modern_bpf_supported: true
+      when: btf_support.stat.exists and ringbuf_present.found and tracing_present.found
+
+- name: Check Old Bpf Support
+  block:
+    - name: Enable old Bpf support
+      ansible.builtin.set_fact:
+        bpf_supported: true
+      when: ansible_kernel is version(bpf_minimum_kver[ansible_architecture],'>=')
 
 - name: Prepare the build directory
   block:
@@ -23,11 +60,6 @@
         mode: "0766"
       register: cmake_result
 
-    - name: Check btf support
-      ansible.builtin.stat:
-        path: /sys/kernel/btf/vmlinux
-      register: btf_support
-
     - name: Prepare cmake for repository
       ansible.builtin.command:
         cmd: >
@@ -35,7 +67,7 @@
              -DUSE_BUNDLED_DEPS=ON
              -DBUILD_LIBSCAP_MODERN_BPF=OFF
              -DBUILD_LIBSCAP_GVISOR=OFF
-             -DBUILD_BPF=true
+             -DBUILD_BPF={{ bpf_supported }}
              -DCREATE_TEST_TARGETS=OFF
              ..
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
@@ -124,6 +156,7 @@
         cmd: make bpf -j {{ cpus }}
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: bpf_probe_result
+      when: bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- build bpf probe
@@ -145,6 +178,7 @@
         cmd: /tmp/scap-open --num_events 50 --bpf driver/bpf/probe.o
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
+      when: bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- scap-open + bpf probe
@@ -166,7 +200,7 @@
         cmd: /tmp/scap-open --num_events 50 --modern_bpf
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
-      when: btf_support.stat.exists
+      when: modern_bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- scap-open + modern probe
