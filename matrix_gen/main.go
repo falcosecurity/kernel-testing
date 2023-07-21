@@ -179,7 +179,11 @@ func (m matrixOutput) Store() {
 			fW.WriteString("Msg:\n")
 			writeMDCodeBlock(fW, mErrReport.Res.Msg)
 			fW.WriteString("Err:\n")
-			writeMDCodeBlock(fW, mErrReport.Res.StdErr)
+			if mErrReport.Res.StdErr != "" {
+				writeMDCodeBlock(fW, mErrReport.Res.StdErr)
+			} else {
+				writeMDCodeBlock(fW, fmt.Sprintf("Exit Code: %d", mErrReport.Res.Rc))
+			}
 		}
 		fW.WriteString("\n")
 	}
