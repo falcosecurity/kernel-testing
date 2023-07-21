@@ -41,7 +41,15 @@ type matrixErrorReportKey struct {
 	Res    testResult
 }
 
+// ToMDSection example: archlinux-5.18 build-kernel-module will become
+// "# archlinux-5.18 build-kernel-module"
 func (m matrixErrorReportKey) ToMDSection() string {
+	return "# " + m.Kernel + " " + m.Test + "\n\n"
+}
+
+// ToMDSectionLink example: archlinux-5.18 build-kernel-module will become
+// "#archlinux-518-build-kernel-module"
+func (m matrixErrorReportKey) ToMDSectionLink() string {
 	key := fmt.Sprint("#" + m.Kernel + "-" + m.Test)
 	// "." is not available, ie:
 	// #archlinux-5.18-build-kernel-module should become
@@ -152,10 +160,10 @@ func (m matrixOutput) Store() {
 				Res:    testRes,
 			}
 			if testRes.Skipped {
-				data[idx] = fmt.Sprintf("[🟡](%s)", mErrKey.ToMDSection())
+				data[idx] = fmt.Sprintf("[🟡](%s)", mErrKey.ToMDSectionLink())
 				toBeReported = append(toBeReported, mErrKey)
 			} else if testRes.Rc != 0 {
-				data[idx] = fmt.Sprintf("[❌](%s)", mErrKey.ToMDSection())
+				data[idx] = fmt.Sprintf("[❌](%s)", mErrKey.ToMDSectionLink())
 				toBeReported = append(toBeReported, mErrKey)
 			} else {
 				data[idx] = "🟢"
@@ -171,7 +179,7 @@ func (m matrixOutput) Store() {
 	// to allow users to quickly heck them.
 	fW.WriteString("\n\n")
 	for _, mErrReport := range toBeReported {
-		fW.WriteString(mErrReport.ToMDSection() + "\n\n")
+		fW.WriteString(mErrReport.ToMDSection())
 		if mErrReport.Res.Skipped {
 			fW.WriteString("Skipped Condition:\n")
 			writeMDCodeBlock(fW, mErrReport.Res.FalseCondition)
