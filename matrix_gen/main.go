@@ -21,20 +21,12 @@ var (
 )
 
 type testResult struct {
-	Rc             matrixEntryResult `json:"rc"`
-	Skipped        bool              `json:"skipped"`
-	StdErr         string            `json:"stderr"`
-	Msg            string            `json:"msg"`
-	FalseCondition string            `json:"false_condition"`
+	Rc             int    `json:"rc"`
+	Skipped        bool   `json:"skipped"`
+	StdErr         string `json:"stderr"`
+	Msg            string `json:"msg"`
+	FalseCondition string `json:"false_condition"`
 }
-
-type matrixEntryResult int
-
-const (
-	matrixEntryResultOK matrixEntryResult = iota
-	matrixEntryResultFail
-	matrixEntryResultSkip
-)
 
 type matrixEntry map[string]testResult
 
@@ -65,7 +57,10 @@ func init() {
 func loadTestResult(path string) testResult {
 	file, _ := os.ReadFile(path)
 	res := testResult{}
-	_ = json.Unmarshal(file, &res)
+	err := json.Unmarshal(file, &res)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return res
 }
 
@@ -156,15 +151,14 @@ func (m matrixOutput) Store() {
 				Test:   testName,
 				Res:    testRes,
 			}
-			switch testRes.Rc {
-			case matrixEntryResultOK:
-				data[idx] = "🟢"
-			case matrixEntryResultFail:
-				data[idx] = fmt.Sprintf("[❌](%s)", mErrKey.ToMDSection())
-				toBeReported = append(toBeReported, mErrKey)
-			case matrixEntryResultSkip:
+			if testRes.Skipped {
 				data[idx] = fmt.Sprintf("[🟡](%s)", mErrKey.ToMDSection())
 				toBeReported = append(toBeReported, mErrKey)
+			} else if testRes.Rc != 0 {
+				data[idx] = fmt.Sprintf("[❌](%s)", mErrKey.ToMDSection())
+				toBeReported = append(toBeReported, mErrKey)
+			} else {
+				data[idx] = "🟢"
 			}
 			idx++
 		}
