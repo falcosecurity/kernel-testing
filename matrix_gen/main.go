@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/olekukonko/tablewriter"
+	"io"
 	"io/fs"
 	"log"
 	"os"
@@ -19,8 +21,11 @@ var (
 )
 
 type testResult struct {
-	Rc      matrixEntryResult `json:"rc"`
-	Skipped bool              `json:"skipped"`
+	Rc             matrixEntryResult `json:"rc"`
+	Skipped        bool              `json:"skipped"`
+	StdErr         string            `json:"stderr"`
+	Msg            string            `json:"msg"`
+	FalseCondition string            `json:"false_condition"`
 }
 
 type matrixEntryResult int
@@ -31,11 +36,25 @@ const (
 	matrixEntryResultSkip
 )
 
-type matrixEntry map[string]matrixEntryResult
+type matrixEntry map[string]testResult
 
 type matrixOutput struct {
 	entries  map[string]matrixEntry
 	testList map[string]time.Time
+}
+
+type matrixErrorReportKey struct {
+	Kernel string
+	Test   string
+	Res    testResult
+}
+
+func (m matrixErrorReportKey) ToMDSection() string {
+	key := fmt.Sprint("#" + m.Kernel + "-" + m.Test)
+	// "." is not available, ie:
+	// #archlinux-5.18-build-kernel-module should become
+	// #archlinux-518-build-kernel-module
+	return strings.Replace(key, ".", "", -1)
 }
 
 func init() {
@@ -43,19 +62,11 @@ func init() {
 	outputFile = flag.String("output-file", "matrix.md", "output file where the generated matrix is stored")
 }
 
-func loadTestResult(path string) matrixEntryResult {
+func loadTestResult(path string) testResult {
 	file, _ := os.ReadFile(path)
-
 	res := testResult{}
-
 	_ = json.Unmarshal(file, &res)
-	if res.Skipped {
-		return matrixEntryResultSkip
-	}
-	if res.Rc != 0 {
-		return matrixEntryResultFail
-	}
-	return matrixEntryResultOK
+	return res
 }
 
 func (m matrixOutput) addTestResult(path string) {
@@ -64,7 +75,7 @@ func (m matrixOutput) addTestResult(path string) {
 	machineName := subPaths[len(subPaths)-2]
 
 	if _, ok := m.entries[machineName]; !ok {
-		m.entries[machineName] = make(map[string]matrixEntryResult)
+		m.entries[machineName] = make(map[string]testResult)
 	}
 	matrixentry := m.entries[machineName]
 	matrixentry[testName] = loadTestResult(path)
@@ -91,6 +102,12 @@ func (m matrixOutput) loadSortTestByModTime() []string {
 		testList = append(testList, val.Key)
 	}
 	return testList
+}
+
+func writeMDCodeBlock(w io.StringWriter, block string) {
+	w.WriteString("```\n")
+	w.WriteString(block + "\n")
+	w.WriteString("```\n")
 }
 
 func (m matrixOutput) Store() {
@@ -121,6 +138,10 @@ func (m matrixOutput) Store() {
 	}
 	sort.Strings(kernels)
 
+	// list of tests that need to be reported to user
+	// because either failed or skipped
+	toBeReported := make([]matrixErrorReportKey, 0)
+
 	for _, kernel := range kernels {
 		tests := m.entries[kernel]
 		data := make([]string, len(headers))
@@ -129,24 +150,45 @@ func (m matrixOutput) Store() {
 				data[idx] = kernel
 				continue
 			}
-			// This should never happen; leave this in case.
-			testRes := matrixEntryResultSkip
-			if _, ok := tests[testName]; ok {
-				testRes = tests[testName]
+			testRes := tests[testName]
+			mErrKey := matrixErrorReportKey{
+				Kernel: kernel,
+				Test:   testName,
+				Res:    testRes,
 			}
-			switch testRes {
+			switch testRes.Rc {
 			case matrixEntryResultOK:
 				data[idx] = "🟢"
 			case matrixEntryResultFail:
-				data[idx] = "❌"
+				data[idx] = fmt.Sprintf("[❌](%s)", mErrKey.ToMDSection())
+				toBeReported = append(toBeReported, mErrKey)
 			case matrixEntryResultSkip:
-				data[idx] = "🟡"
+				data[idx] = fmt.Sprintf("[🟡](%s)", mErrKey.ToMDSection())
+				toBeReported = append(toBeReported, mErrKey)
 			}
 			idx++
 		}
 		table.Append(data)
 	}
 	table.Render() // Send output
+
+	// After the table, append all the failed/skipped tests
+	// outputs, each as a separate section,
+	// to allow users to quickly heck them.
+	fW.WriteString("\n\n")
+	for _, mErrReport := range toBeReported {
+		fW.WriteString(mErrReport.ToMDSection() + "\n\n")
+		if mErrReport.Res.Skipped {
+			fW.WriteString("Skipped Condition:\n")
+			writeMDCodeBlock(fW, mErrReport.Res.FalseCondition)
+		} else {
+			fW.WriteString("Msg:\n")
+			writeMDCodeBlock(fW, mErrReport.Res.Msg)
+			fW.WriteString("Err:\n")
+			writeMDCodeBlock(fW, mErrReport.Res.StdErr)
+		}
+		fW.WriteString("\n")
+	}
 }
 
 func main() {
