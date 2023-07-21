@@ -101,7 +101,7 @@
 
 - name: Play that runs probes tests using scap-open binary
   hosts: all
-  gather_facts: false
+  gather_facts: true
   remote_user: "{{ user }}"
   become: true
   serial: 30
