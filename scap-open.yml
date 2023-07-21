@@ -100,7 +100,7 @@
       become: false
 
 - name: Play that runs probes tests using scap-open binary
-  hosts: all
+  hosts: "machines"
   gather_facts: true
   remote_user: "{{ user }}"
   become: true
