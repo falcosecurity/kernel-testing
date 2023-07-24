@@ -15,4 +15,4 @@ jobs:
 
             - name: Run ansible-lint
               # replace `main` with any valid ref, or tags like `v6`
-              uses: ansible/ansible-lint-action@cad5176ea6f24a38f909d688bd467ec8d942d7e1 # v 6.17.0
+              uses: ansible/ansible-lint-action@v6.3.0 # the latest version has a bug that do not run in online mode
