@@ -8,3 +8,9 @@ profile: production # min, basic, moderate,safety, shared, production
 # option are parsed relative to the CWD of execution.
 exclude_paths:
   - .github/
+  - .ansible-lint
+  - requirements.yml
+
+# Offline mode enables installation of requirements.yml and schema refreshing
+# needed by the community collection
+online: true
