@@ -161,7 +161,7 @@
   rescue:
     - name: Print error message to stdout --- build bpf probe
       ansible.builtin.debug:
-        var: result
+        var: bpf_probe_result
   always:
     - name: Dump error message to file
       ansible.builtin.copy:
