@@ -1,8 +1,12 @@
-[![Drivers Matrix Tests](https://github.com/alacuku/e2e-falco-tests/actions/workflows/kernel_tests.yaml/badge.svg)](https://github.com/alacuku/e2e-falco-tests/actions/workflows/kernel_tests.yaml)
+[![Falco kernel tests Repository](https://github.com/falcosecurity/evolution/blob/main/repos/badges/falco-infra-blue.svg)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#infra-scope) 
+[![Incubating](https://img.shields.io/badge/status-incubating-orange?style=for-the-badge)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#incubating)
+![Architectures](https://img.shields.io/badge/ARCHS-x86__64%7Caarch64-blueviolet?style=for-the-badge)
+
 
 # Falco drivers tests
 
-This repository automatically runs Falco [scap-open](https://github.com/falcosecurity/libs/tree/master/userspace/libscap/examples/01-open) binary on all supported drivers through Ansible.
+This repository automatically runs Falco [scap-open](https://github.com/falcosecurity/libs/tree/master/userspace/libscap/examples/01-open) binary on all supported drivers through Ansible, spawning Firecracker microVMs to test Falco drivers against multiple kernels.  
+You can find list of machines being used [here](https://github.com/alacuku/e2e-falco-tests/blob/main/group_vars/all/vars.yml#L18).
 
 ## Prerequisites
 
@@ -36,13 +40,13 @@ You need to provide the path to the key pair (`ssh_key_path`) and the name of th
 From the repository root you can run tests on all machines by typing:
 
 ```bash
-ansible-playbook master-playbook.yml --ask-become 
+ansible-playbook main-playbook --ask-become 
 ```
 
 To rerun tests:
 
 ```bash
-ansible-playbook scap-open-test.yml --ask-become 
+ansible-playbook scap-open.yml --ask-become 
 ```
 
 ## Clean-up all machines
