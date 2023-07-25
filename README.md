@@ -37,7 +37,7 @@ You need to provide the path to the key pair (`ssh_key_path`) and the name of th
 
 ## Run tests
 
-From the repository root you can run tests on all machines by typing:
+From the `ansible-playbooks` directory you can run tests on all machines by typing:
 
 ```bash
 ansible-playbook main-playbook --ask-become 
