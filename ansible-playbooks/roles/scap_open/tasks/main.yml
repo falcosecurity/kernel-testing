@@ -16,33 +16,16 @@
 
 - name: Check Modern Bpf Support
   block:
-    - name: Check BTF support
-      ansible.builtin.stat:
-        path: /sys/kernel/btf/vmlinux
-      register: btf_support
-
-    - name: Look up for BPF_MAP_TYPE_RINGBUF
-      ansible.builtin.lineinfile:
-        path: /usr/include/linux/bpf.h
-        regex: BPF_MAP_TYPE_RINGBUF*
-        state: absent
+    - name: Check modern-bpf support
+      ansible.builtin.command:
+        cmd: /tmp/scap-open --num_events 0 --modern_bpf
+      register: result
       changed_when: false
-      check_mode: 'yes'
-      register: ringbuf_present
-
-    - name: Look up for BPF_PROG_TYPE_TRACING
-      ansible.builtin.lineinfile:
-        path: /usr/include/linux/bpf.h
-        regex: BPF_PROG_TYPE_TRACING*
-        state: absent
-      changed_when: false
-      check_mode: 'yes'
-      register: tracing_present
-
+  rescue:
     - name: Enable Modern Bpf support
       ansible.builtin.set_fact:
         modern_bpf_supported: true
-      when: btf_support.stat.exists and ringbuf_present.found and tracing_present.found
+      when: result.rc != 95
 
 - name: Check Old Bpf Support
   block:
