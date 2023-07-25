@@ -22,7 +22,6 @@ machines:
   - {name: "amazonlinux2-5.10", kernel: "therealbobo/amazonlinux2-kernel:5.10-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.10-x86_64", arch: "x86_64"}
   - {name: "amazonlinux2-5.15", kernel: "therealbobo/amazonlinux2-kernel:5.15-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.15-x86_64", arch: "x86_64"}
   - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-x86_64", rootfs: "therealbobo/amazonlinux2-image:5.4-x86_64", arch: "x86_64"}
-  - {name: "archlinux-5.18", kernel: "therealbobo/archlinux-kernel:5.18-x86_64", rootfs: "therealbobo/archlinux-image:5.18-x86_64", arch: "x86_64"}
   - {name: "archlinux-6.0", kernel: "therealbobo/archlinux-kernel:6.0-x86_64", rootfs: "therealbobo/archlinux-image:6.0-x86_64", arch: "x86_64"}
   - {name: "centos-3.10", kernel: "therealbobo/centos-kernel:3.10-x86_64", rootfs: "therealbobo/centos-image:3.10-x86_64", arch: "x86_64"}
   - {name: "centos-4.18", kernel: "therealbobo/centos-kernel:4.18-x86_64", rootfs: "therealbobo/centos-image:4.18-x86_64", arch: "x86_64"}
