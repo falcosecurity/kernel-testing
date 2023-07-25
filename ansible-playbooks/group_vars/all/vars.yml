@@ -38,7 +38,6 @@ machines:
   - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-x86_64", rootfs: "therealbobo/ubuntu-image:6.3-x86_64", arch: "x86_64"}
   - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-aarch64", rootfs: "therealbobo/amazonlinux2022-image:5.15-aarch64", arch: "aarch64"}  # noqa: yaml[line-length]
   - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-aarch64", rootfs: "therealbobo/amazonlinux2-image:5.4-aarch64", arch: "aarch64"}
-  # - {name: "archlinux-4.14", kernel: "therealbobo/archlinux-kernel:4.14-aarch64", rootfs: "therealbobo/archlinux-image:4.14-aarch64", arch: "aarch64"}
   - {name: "fedora-6.2", kernel: "therealbobo/fedora-kernel:6.2-aarch64", rootfs: "therealbobo/fedora-image:6.2-aarch64", arch: "aarch64"}
   - {name: "oraclelinux-4.14", kernel: "therealbobo/oraclelinux-kernel:4.14-aarch64", rootfs: "therealbobo/oraclelinux-image:4.14-aarch64", arch: "aarch64"}
   - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-aarch64", rootfs: "therealbobo/oraclelinux-image:5.15-aarch64", arch: "aarch64"}
