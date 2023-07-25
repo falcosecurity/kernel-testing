@@ -7,6 +7,7 @@
     version: "{{ item.value.version | default(omit) }}"
     refspec: "{{ item.value.refspec | default(omit) }}"
     dest: "{{ local_repos_folder }}/{{ item.value.name | mandatory }}"
+    accept_newhostkey: true
   with_dict: "{{ repos }}"
   delegate_to: localhost
   run_once: true
