@@ -1,0 +1,65 @@
+ARG VERSION=6.2.9-300
+ARG HVERSION=6.2.6-300
+ARG URL='https://mirrors.kernel.org/fedora/releases/38/Everything/x86_64/os/Packages'
+ARG ARCH=x86_64
+
+FROM initrd-builder:0.0.1 AS stage1
+
+ARG VERSION
+ARG HVERSION
+ARG URL
+ARG ARCH
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	curl -Lo kernel.rpm  ${URL}/k/kernel-core-${VERSION}.fc38.${ARCH}.rpm     && \
+	curl -Lo headers.rpm ${URL}/k/kernel-headers-${HVERSION}.fc38.${ARCH}.rpm && \
+	curl -Lo modules.rpm ${URL}/k/kernel-modules-${VERSION}.fc38.${ARCH}.rpm  && \
+	curl -Lo sources.rpm ${URL}/k/kernel-devel-${VERSION}.fc38.${ARCH}.rpm    && \
+	curl -Lo modules-core.rpm ${URL}/k/kernel-modules-core-${VERSION}.fc38.${ARCH}.rpm  && \
+	rpm2cpio kernel.rpm  > kernel.cpio  && \
+	rpm2cpio headers.rpm > headers.cpio && \
+	rpm2cpio modules.rpm > modules.cpio && \
+	rpm2cpio sources.rpm > sources.cpio && \
+	rpm2cpio modules-core.rpm > modules-core.cpio && \
+	mkdir extracted && \
+	cd extracted && \
+	cpio -idmv < ../kernel.cpio  && \
+	cpio -idmv < ../headers.cpio && \
+	cpio -idmv < ../modules.cpio && \
+	cpio -idmv < ../sources.cpio && \
+	cpio -idmv < ../modules-core.cpio && \
+	find . -name '*.xz' -exec xz -d {} \; && \
+	extract-vmlinux $(find lib/modules -name vmlinuz) > /home/ubuntu/extracted/vmlinux
+
+FROM fedora:38 as kmod-builder
+
+ARG VERSION
+ARG HVERSION
+ARG URL
+ARG ARCH
+
+WORKDIR /home/ubuntu
+COPY --from=stage1 /home/ubuntu/extracted /home/ubuntu/extracted/
+COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
+
+
+RUN dnf groupinstall -y 'Development Tools' && \
+	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
+	curl -LO 'https://gitlab.com/cki-project/kernel-ark/-/raw/fedora-6.2/drivers/virtio/virtio_mmio.c' && \
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.fc38.${ARCH}/" make && \
+	find /home/ubuntu/extracted/lib/modules/ -name '*.ko'
+
+
+FROM initrd-builder:0.0.1 AS stage2
+COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
+COPY --from=kmod-builder /home/ubuntu/virtio_mmio.ko /home/ubuntu/
+RUN cd /home/ubuntu/extracted && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=stage1 /home/ubuntu/.placeholder      /lib/modules/
+COPY --from=stage1 /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=stage2 /home/ubuntu/out/initrd        /boot/

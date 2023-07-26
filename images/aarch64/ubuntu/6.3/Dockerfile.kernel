@@ -1,0 +1,30 @@
+FROM initrd-builder:0.0.1 AS builder
+
+ARG VERSION=6.3.0-7-generic
+ARG URL='http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux/'
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+                curl ${URL} | \
+                grep 'arm64' | \
+                grep -v '64k' | \
+                grep -oE "linux-image-unsigned-${VERSION}.*deb\"|linux-modules-${VERSION}.*deb\"" | \
+                tr -d '"' | \
+                xargs -I@ curl -LO ${URL}@ && \
+        ls -lah && \
+        mkdir extracted && \
+        ls *deb | \
+                xargs -I@ dpkg -x @ extracted && \
+        find extracted -name 'vmlinuz*' | \
+                xargs -I@ mv @ extracted/vmlinux.gz && \
+        gunzip extracted/vmlinux.gz && \
+        cd extracted && \
+        /opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=builder /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=builder /home/ubuntu//out/initrd /boot/
+COPY --from=builder /home/ubuntu/.placeholder /lib/modules/
+

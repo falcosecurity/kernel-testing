@@ -1,0 +1,56 @@
+ARG VERSION=6.1.34-58
+ARG URL='https://cdn.amazonlinux.com/al2023/core/mirrors/latest/x86_64'
+ARG ARCH=x86_64
+
+FROM initrd-builder:0.0.1 AS stage1
+
+ARG VERSION
+ARG URL
+ARG ARCH
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	curl -sLO "$URL"/mirror.list && \
+	URL=$(cat mirror.list) && \
+	curl -sLO "${URL}"repodata/primary.xml.gz && \
+	gunzip primary.xml.gz && \
+    grep -E 'kernel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+		xargs -I@ curl -Lo kernel.rpm ${URL}@ && \
+    grep -E 'kernel-devel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+		xargs -I@ curl -Lo headers.rpm "${URL}@" && \
+	rpm2cpio kernel.rpm > kernel.cpio && \
+	rpm2cpio headers.rpm > headers.cpio && \
+	mkdir extracted && \
+	cd extracted && \
+	cpio -idmv < ../kernel.cpio  && \
+	cpio -idmv < ../headers.cpio && \
+	cd .. && \
+	extract-vmlinux $(find ./extracted/lib/modules -name vmlinuz) > extracted/vmlinux
+
+FROM amazonlinux:2023 as kmod-builder
+
+ARG VERSION
+ARG URL
+ARG ARCH
+
+WORKDIR /home/ubuntu
+COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
+COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
+
+RUN dnf groupinstall -y 'Development Tools' && \
+	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
+	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v6.1/drivers/virtio/virtio_mmio.c' && \
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/6.1.34-58.102.amzn2023.${ARCH}/" make
+
+FROM initrd-builder:0.0.1 AS stage2
+COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
+COPY --from=kmod-builder /home/ubuntu/virtio_mmio.ko /home/ubuntu/
+RUN cd /home/ubuntu/extracted && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=stage1 /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=stage2 /home/ubuntu/out/initrd        /boot/
+COPY --from=stage1 /home/ubuntu/.placeholder      /lib/modules/

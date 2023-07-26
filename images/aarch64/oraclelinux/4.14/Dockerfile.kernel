@@ -1,0 +1,61 @@
+FROM initrd-builder:0.0.1 AS stage1
+
+ARG VERSION=4.14.35-2047.527.2
+ARG URL='https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64'
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-${VERSION}.el7uek.aarch64.rpm && \
+	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el7uek.aarch64.rpm && \
+	rpm2cpio kernel.rpm  > kernel.cpio && \
+	rpm2cpio devel.rpm   > devel.cpio  && \
+	mkdir extracted && \
+	cd extracted && \
+	cpio -idmv < ../kernel.cpio  && \
+	cpio -idmv < ../devel.cpio && \
+	find . -name '*.xz' -exec xz -d {} \; && \
+	cd .. && \
+	find ./extracted/ -name 'vmlinuz-*' -exec cp -v {} extracted/vmlinux \;
+
+FROM amazonlinux:2 as kmod-builder
+
+WORKDIR /home/ubuntu
+COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
+COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
+
+RUN yum groupinstall -y 'Development Tools' && \
+	yum install -y gcc elfutils-libelf-devel gcc && \
+	curl -Lo libdtrace-devel.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64/getPackage/libdtrace-ctf-devel-1.1.0-2.el7.aarch64.rpm && \
+	curl -Lo libdtrace.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64/getPackage/libdtrace-ctf-1.1.0-2.el7.aarch64.rpm && \
+	yum install -y --skip-broken ./libdtrace.rpm ./libdtrace-devel.rpm && \
+	curl -Lo source.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64/getPackageSource/kernel-uek-4.14.35-2047.527.2.el7uek.src.rpm && \
+	mkdir src && \
+	cd src && \
+	rpm2cpio ../source.rpm  > source.cpio  && \
+	cpio -idmv < ./source.cpio  && \
+	tar -xaf linux-4.14.35.tar.bz2 && \
+	cd .. && \
+	find src -name 'virtio_mmio.c' -exec cp -v {} . \; && \
+	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
+	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
+	mkdir -p /opt/oracle/oracle-armtoolset-1/root/bin/ && \
+	ln -s /usr/bin/gcc     /opt/oracle/oracle-armtoolset-1/root/bin/gcc && \
+	ln -s /usr/bin/ld      /opt/oracle/oracle-armtoolset-1/root/bin/ld  && \
+	ln -s /usr/bin/nm      /opt/oracle/oracle-armtoolset-1/root/bin/nm  && \
+	ln -s /usr/bin/objdump /opt/oracle/oracle-armtoolset-1/root/bin/objdump && \
+	ln -s /usr/bin/objcopy /opt/oracle/oracle-armtoolset-1/root/bin/objcopy && \
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/4.14.35-2047.527.2.el7uek.aarch64/" make
+
+FROM initrd-builder:0.0.1 AS stage2
+
+COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
+COPY --from=kmod-builder /home/ubuntu/virtio_mmio.ko /home/ubuntu/
+RUN cd /home/ubuntu/extracted && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=stage1 /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=stage2 /home/ubuntu/out/initrd        /boot/
+COPY --from=stage1 /home/ubuntu/.placeholder /lib/modules/

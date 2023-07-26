@@ -1,0 +1,29 @@
+ARG VERSION
+ARG URL
+ARG ARCH
+
+FROM initrd-builder:0.0.1 AS builder
+
+ARG VERSION=linux-5.18.16.arch1-1
+ARG URL='https://archive.archlinux.org/packages/l'
+ARG ARCH=x86_64
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	curl -Lo kernel.pkg.tar.zst  ${URL}/linux/linux-${VERSION}-${ARCH}.pkg.tar.zst && \
+	curl -Lo headers.pkg.tar.zst ${URL}/linux-headers/linux-headers-${VERSION}-${ARCH}.pkg.tar.zst && \
+	mkdir extracted && \
+	cd extracted && \
+	ls ../*.tar.zst | \
+		xargs -I@ tar -xaf @ && \
+	find . -name '*.zst' -exec zstd -d --rm -f {} \; && \
+	mv ./usr/lib . && \
+	extract-vmlinux $(find . -name 'vmlinux') > vmlinux && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=builder /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=builder /home/ubuntu/out/initrd        /boot/
+COPY --from=builder /home/ubuntu/.placeholder      /lib/modules/

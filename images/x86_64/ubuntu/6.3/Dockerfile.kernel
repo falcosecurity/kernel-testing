@@ -1,0 +1,24 @@
+FROM initrd-builder:0.0.1 AS builder
+
+ARG VERSION=6.3.0-7-generic
+ARG URL='http://mirrors.edge.kernel.org/ubuntu/pool/main/l/linux/'
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+		curl ${URL} | \
+		grep -E "linux-image-unsigned-${VERSION}|linux-modules-${VERSION}" | \
+		cut -d\" -f2 | \
+		xargs -I@ curl -LO ${URL}@ && \
+	mkdir extracted && \
+	ls *deb | \
+		xargs -I@ dpkg -x @ extracted && \
+	extract-vmlinux extracted/boot/vmlinuz-${VERSION} > extracted/vmlinux && \
+	cd extracted && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=builder /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=builder /home/ubuntu//out/initrd /boot/
+COPY --from=builder /home/ubuntu/.placeholder /lib/modules/

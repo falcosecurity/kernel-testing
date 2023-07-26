@@ -1,0 +1,52 @@
+FROM initrd-builder:0.0.1 AS stage1
+
+ARG VERSION=5.15.0-8.91.4.1
+ARG URL='https://yum.oracle.com/repo/OracleLinux/OL9/baseos/latest/aarch64'
+ARG ARCH='aarch64'
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-core-${VERSION}.el9uek.${ARCH}.rpm && \
+	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el9uek.${ARCH}.rpm && \
+	curl -L -o modules.rpm ${URL}/getPackage/kernel-uek-modules-${VERSION}.el9uek.${ARCH}.rpm && \
+	rpm2cpio kernel.rpm  > kernel.cpio && \
+	rpm2cpio devel.rpm   > devel.cpio  && \
+	rpm2cpio modules.rpm > modules.cpio  && \
+	mkdir extracted && \
+	cd extracted && \
+	cpio -idmv < ../kernel.cpio  && \
+	cpio -idmv < ../devel.cpio && \
+	cpio -idmv < ../modules.cpio && \
+	find . -name '*.xz' -exec xz -d {} \; && \
+	cd .. && \
+	find ./extracted/ -name 'vmlinuz*' -exec cp -v {} extracted/vmlinux \;
+
+FROM oraclelinux:9 as kmod-builder
+
+WORKDIR /home/ubuntu
+COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
+COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
+
+RUN yum groupinstall -y 'Development Tools' && \
+	yum install -y gcc && \
+	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
+	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v5.15/drivers/virtio/virtio_mmio.c' && \
+	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/5.15.0-8.91.4.1.el9uek.aarch64/" make
+
+FROM initrd-builder:0.0.1 AS stage2
+
+#RUN mkdir -p /home/ubuntu/out
+
+COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
+#COPY --from=kmod-builder /home/ubuntu/virtio_mmio.ko /home/ubuntu/out/test.ko
+COPY --from=kmod-builder /home/ubuntu/virtio_mmio.ko /home/ubuntu/
+RUN cd /home/ubuntu/extracted && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=stage1 /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=stage2 /home/ubuntu/out/initrd        /boot/
+COPY --from=stage1 /home/ubuntu/.placeholder /lib/modules/
