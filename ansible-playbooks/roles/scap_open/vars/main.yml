@@ -1,5 +1,5 @@
 ---
-modern_bpf_supported: false
+modern_bpf_supported: true
 bpf_supported: false
 bpf_minimum_kver:
   aarch64: '4.17'

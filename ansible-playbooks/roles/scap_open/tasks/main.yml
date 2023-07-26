@@ -22,10 +22,10 @@
       register: result
       changed_when: false
   rescue:
-    - name: Enable Modern Bpf support
+    - name: Disable Modern Bpf support
       ansible.builtin.set_fact:
-        modern_bpf_supported: true
-      when: result.rc != 95
+        modern_bpf_supported: false
+      when: result.rc == 95
 
 - name: Check Old Bpf Support
   block:
