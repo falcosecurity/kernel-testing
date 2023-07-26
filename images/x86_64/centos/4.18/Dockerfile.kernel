@@ -1,0 +1,58 @@
+ARG VERSION=4.18.0-497
+ARG BASEOS_URL='http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages'
+ARG ARCH=x86_64
+
+FROM initrd-builder:0.0.1 AS stage1
+
+ARG VERSION
+ARG BASEOS_URL
+ARG ARCH
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	curl -Lo kernel.rpm  ${BASEOS_URL}/kernel-${VERSION}.el8.${ARCH}.rpm              && \
+	curl -Lo modules.rpm ${BASEOS_URL}/kernel-modules-${VERSION}.el8.${ARCH}.rpm      && \
+	curl -Lo core.rpm    ${BASEOS_URL}/kernel-core-${VERSION}.el8.${ARCH}.rpm         && \
+	curl -Lo headers.rpm ${BASEOS_URL}/kernel-devel-${VERSION}.el8.${ARCH}.rpm        && \
+	rpm2cpio kernel.rpm  > kernel.cpio  && \
+	rpm2cpio modules.rpm > modules.cpio  && \
+	rpm2cpio core.rpm    > core.cpio    && \
+	rpm2cpio headers.rpm > headers.cpio && \
+	mkdir extracted && \
+	cd extracted && \
+	cpio -idmv < ../kernel.cpio  && \
+	cpio -idmv < ../modules.cpio && \
+	cpio -idmv < ../core.cpio    && \
+	cpio -idmv < ../headers.cpio && \
+	find . -name '*.xz' -exec xz -d {} \; && \
+	cd .. && \
+	extract-vmlinux $(find ./extracted/ -name 'vmlinuz*') > extracted/vmlinux
+
+FROM quay.io/centos/centos:stream8 as kmod-builder
+
+ARG VERSION
+ARG BASEOS_URL
+ARG ARCH
+
+WORKDIR /home/ubuntu
+COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
+COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
+
+RUN dnf groupinstall -y 'Development Tools' && \
+	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
+	curl -LO 'https://gitlab.com/redhat/centos-stream/src/kernel/centos-stream-8/-/raw/c8s/drivers/virtio/virtio_mmio.c' && \
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/4.18.0-497.el8.x86_64" make
+
+FROM initrd-builder:0.0.1 AS stage2
+COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
+COPY --from=kmod-builder /home/ubuntu/virtio_mmio.ko /home/ubuntu/
+RUN cd /home/ubuntu/extracted && \
+	ls -lah /home/ubuntu/ && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=stage1 /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=stage2 /home/ubuntu/out/initrd        /boot/
+COPY --from=stage1 /home/ubuntu/.placeholder      /lib/modules/

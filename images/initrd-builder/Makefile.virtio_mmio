@@ -1,0 +1,23 @@
+obj-m +=virtio_mmio.o
+
+# Compiler flags
+EXTRA_CFLAGS := -DCONFIG_VIRTIO_MMIO_CMDLINE_DEVICES
+
+# Name of the kernel module
+MODULE_NAME := virtio_mmio
+
+KERNEL_DIR ?= /lib/modules/$(shell uname -r)/build
+
+# Default target
+all: $(MODULE_NAME).ko
+
+# Rule to build the kernel module
+$(MODULE_NAME).ko: $(MODULE_PATH)
+	$(MAKE) -C $(KERNEL_DIR) EXTRA_CFLAGS="$(EXTRA_CFLAGS)" M=$(PWD) modules
+
+# Rule to clean the kernel module
+clean:
+	rm -rf *.o *.ko *.mod.* *.symvers *.order *.mod .*
+
+.PHONY: all clean
+

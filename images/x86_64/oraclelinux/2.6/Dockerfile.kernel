@@ -1,0 +1,53 @@
+FROM initrd-builder:0.0.1 AS stage1
+
+ARG VERSION=2.6.39-400.330.1
+ARG URL='https://yum.oracle.com/repo/OracleLinux/OL6/UEK/latest/x86_64'
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-${VERSION}.el6uek.x86_64.rpm && \
+	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el6uek.x86_64.rpm && \
+	rpm2cpio kernel.rpm  > kernel.cpio && \
+	rpm2cpio devel.rpm   > devel.cpio  && \
+	mkdir extracted && \
+	cd extracted && \
+	cpio -idmv < ../kernel.cpio  && \
+	cpio -idmv < ../devel.cpio && \
+	find . -name '*.xz' -exec xz -d {} \; && \
+	cd .. && \
+	extract-vmlinux $(find ./extracted/ -name 'vmlinuz-*') > extracted/vmlinux
+
+FROM oraclelinux:7 as kmod-builder
+
+WORKDIR /home/ubuntu
+COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
+COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
+
+COPY /virtio_mmio.c /home/ubuntu/virtio_mmio.c
+
+RUN yum groupinstall -y 'Development Tools' && \
+	yum install -y gcc && \
+	mkdir src && \
+	cd src && \
+	curl -Lo source.rpm 'https://oss.oracle.com/ol6/SRPMS-updates/kernel-uek-2.6.39-400.330.1.el6uek.src.rpm' && \
+	rpm2cpio source.rpm  > source.cpio && \
+	cpio -idmv < ./source.cpio  && \
+	tar -xaf linux-2.6.39.tar.bz2 && \
+	cd .. && \
+	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
+	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
+	echo KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/2.6.39-400.330.1.el6uek.x86_64/" make > cmd
+
+#FROM initrd-builder:0.0.1 AS stage2
+#
+#COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
+#COPY --from=kmod-builder /home/ubuntu/virtio_mmio.ko /home/ubuntu/
+#RUN cd /home/ubuntu/extracted && \
+#	/opt/initrd-builder/create.sh
+#
+#FROM scratch
+#
+#COPY --from=stage1 /home/ubuntu/extracted/vmlinux /boot/
+#COPY --from=stage2 /home/ubuntu/out/initrd        /boot/
+#COPY --from=stage1 /home/ubuntu/.placeholder /lib/modules/

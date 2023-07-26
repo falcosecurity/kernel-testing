@@ -1,0 +1,25 @@
+FROM initrd-builder:0.0.1 AS builder
+
+ARG VERSION=4.14.15-1
+ARG URL='http://tardis.tiny-vps.com/aarm/packages'
+
+WORKDIR /home/ubuntu
+
+RUN touch .placeholder && \
+	    apt update && apt install -y file && \
+	curl -Lo kernel.pkg.tar.xz  ${URL}/l/linux-aarch64/linux-aarch64-4.14.15-1-aarch64.pkg.tar.xz && \
+	mkdir extracted && \
+	cd extracted && \
+	ls ../*.tar.xz | \
+		xargs -I@ tar -xaf @ && \
+	find . -name '*.gz' -exec gunzip {} \; && \
+	find . -name '*ko*' && \
+	mv ./usr/lib . && \
+	cp -v boot/Image vmlinux && \
+	/opt/initrd-builder/create.sh
+
+FROM scratch
+
+COPY --from=builder /home/ubuntu/extracted/vmlinux /boot/
+COPY --from=builder /home/ubuntu/out/initrd        /boot/
+COPY --from=builder /home/ubuntu/.placeholder      /lib/modules/

@@ -1,0 +1,6 @@
+[developer]
+name=Packages for test and development - Oracle Linux 7
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/developer/$basearch
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
