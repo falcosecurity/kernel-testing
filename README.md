@@ -11,7 +11,7 @@ You can find list of machines being used [here](./group_vars/all/vars.yml#L18).
 ## Prerequisites
 
 * Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-* Install [Ignite](https://ignite.readthedocs.io/en/stable/installation/) from therealbobo fork (use main branch): https://github.com/therealbobo/ignite
+* Install [Ignite](https://ignite.readthedocs.io/en/stable/installation/) from `therealbobo` fork (use `main` branch): https://github.com/therealbobo/ignite
 
 ## Configure repository
 
@@ -40,7 +40,7 @@ You need to provide the path to the key pair (`ssh_key_path`) and the name of th
 From the `ansible-playbooks` directory you can run tests on all machines by typing:
 
 ```bash
-ansible-playbook main-playbook --ask-become 
+ansible-playbook main-playbook.yml --ask-become 
 ```
 
 To rerun tests:
