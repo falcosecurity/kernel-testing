@@ -64,7 +64,7 @@
     - name: Dump error message to file
       ansible.builtin.copy:
         content: "{{ cmake_result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/cmake-build-directory.json"
+        dest: "{{ output_dest_dir }}/cmake-configure.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -99,7 +99,7 @@
     - name: Dump error message to file
       ansible.builtin.copy:
         content: "{{ km_result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/build-kernel-module.json"
+        dest: "{{ output_dest_dir }}/kmod_build.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -127,7 +127,7 @@
     - name: Dump error message to file
       ansible.builtin.copy:
         content: "{{ result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/scap-open-and-kernel-module.json"
+        dest: "{{ output_dest_dir }}/kmod_scap-open.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -149,7 +149,7 @@
     - name: Dump error message to file
       ansible.builtin.copy:
         content: "{{ bpf_probe_result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/build-bpf-probe.json"
+        dest: "{{ output_dest_dir }}/bpf-probe_build.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -171,7 +171,7 @@
     - name: Dump error message to file
       ansible.builtin.copy:
         content: "{{ result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/scap-open-and-bpf-probe.json"
+        dest: "{{ output_dest_dir }}/bpf-probe_scap-open.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -193,7 +193,7 @@
     - name: Dump error message to file
       ansible.builtin.copy:
         content: "{{ result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/scap-open-and-modern-probe.json"
+        dest: "{{ output_dest_dir }}/modern-bpf_scap-open.json"
         mode: '0755'
       delegate_to: localhost
       become: false
