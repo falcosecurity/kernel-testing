@@ -1,4 +1,4 @@
-module github.com/alacuku/matrix_gen
+module github.com/falcosecurity/kernel-testing/matrix_gen
 
 go 1.18
 
