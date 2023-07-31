@@ -1,0 +1,16 @@
+name: Matrix-gen CI
+on:
+  pull_request:
+    paths:
+      - 'matrix_gen/**'
+
+jobs:
+  build-matrix-gen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo ⤵️
+        uses: actions/checkout@v3
+    
+      - name: Build matrix_gen
+        working-directory: ./matrix_gen
+        run: go build .
