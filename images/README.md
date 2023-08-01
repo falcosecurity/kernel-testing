@@ -2,11 +2,10 @@
 
 Makefile present in this directory is specifically designed to generate the static Docker images required by Ignite to run tests on different Linux distributions. The workflow provided by this Makefile is designed to be straightforward, consisting of three main commands:
 
-1. `build-all`: This target builds all the necessary Docker images for the different versions and distributions required for testing with Firecracker.
+1. `build-all`: This target builds all the necessary Docker images for the different versions and distributions required for testing with Firecracker.  
+Optionally, you can set `PUSH=true` env variable to push the resulting Docker images to a Docker Hub registry for easier distribution and access.
 
-2. `docker-push`: Optionally, you can use this target to push the resulting Docker images to a Docker Hub registry for easier distribution and access.
-
-3. `generate-yaml`: This target allows you to generate a YAML file (`images.yaml`) containing the matrix of new image information. The generated YAML file can be conveniently copied to the variables file of Ansible to keep the test environment up to date.
+2. `generate-yaml`: This target allows you to generate a YAML file (`images.yaml`) containing the matrix of new image information. The generated YAML file can be conveniently copied to the variables file of Ansible to keep the test environment up to date.
 
 ## Prerequisites
 
@@ -72,6 +71,8 @@ After running these commands, you will have the necessary Docker images for your
 You can customize the Makefile to suit your specific requirements. The variables you can modify include:
 
 - `DRY_RUN`: Set this variable to `true` for a dry run, where the build commands will be printed but not executed.
+
+- `PUSH`: Set this variable to `true` when executing build to also push built image to remote registry.
 
 - `REPOSITORY`: The Docker repository where the built images will be tagged and pushed.
 

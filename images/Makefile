@@ -1,9 +1,10 @@
 DRY_RUN := false
-REPOSITORY := falcosecurity/kernel-testing
+PUSH := false
+REPOSITORY := ghcr.io/falcosecurity/kernel-testing
 ARCH ?= $(shell uname -m)
 YAML_FILE := images.yaml
 
-.PHONY: build-rootfs build-kernel docker-push generate-yaml build-all initrd-builder modernprobe-builder builder
+.PHONY: build-rootfs build-kernel generate-yaml build-all initrd-builder modernprobe-builder builder
 
 builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
@@ -11,6 +12,10 @@ builder:
 	else \
 		echo "Building modernprobe-builder image"; \
 		docker build -t $(REPOSITORY)/builder:0.0.1-$(ARCH) builder; \
+		if [ "$(PUSH)" = "true" ]; then \
+			echo "Pushing image: $(REPOSITORY)/builder:0.0.1-$(ARCH)"; \
+			docker push $(REPOSITORY)/builder:0.0.1-$(ARCH); \
+		fi; \
 	fi
 
 modernprobe-builder:
@@ -19,6 +24,10 @@ modernprobe-builder:
 	else \
 		echo "Building modernprobe-builder image"; \
 		docker build -t $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH) modernprobe-builder; \
+		if [ "$(PUSH)" = "true" ]; then \
+			echo "Pushing image: $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH)"; \
+			docker push $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH); \
+		fi; \
 	fi
 
 initrd-builder:
@@ -39,6 +48,12 @@ build-rootfs:
 		else \
 			echo "Building rootfs image: $$image"; \
 			docker build -t $$image $$rootfs_dir; \
+			if [ "$(PUSH)" = "true" ]; then \
+				echo "Pushing image: $$image"; \
+				docker push $$image; \
+			fi; \
+			docker image rm -f $$image; \
+			docker builder prune -f -a; \
 		fi; \
 	done
 
@@ -52,16 +67,12 @@ build-kernel: initrd-builder
 		else \
 			echo "Building kernel image: $$image"; \
 			docker build -t $$image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir; \
-		fi; \
-	done
-
-docker-push:
-	@for image in $$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "$(REPOSITORY)" | grep "$(ARCH)"); do \
-		if [ "$(DRY_RUN)" = "true" ]; then \
-			echo "Dry run: Pushing image: docker push $$image"; \
-		else \
-			echo "Pushing image: $$image"; \
-			docker push $$image; \
+			if [ "$(PUSH)" = "true" ]; then \
+				echo "Pushing image: $$image"; \
+				docker push $$image; \
+			fi; \
+			docker image rm -f $$image; \
+			docker builder prune -f -a; \
 		fi; \
 	done
 
@@ -79,6 +90,10 @@ docker-push:
 			else \
 				echo "Building rootfs image: $$rootfs_image"; \
 				docker build -t $$rootfs_image $$rootfs_dir; \
+				if [ "$(PUSH)" = "true" ]; then \
+					echo "Pushing image: $$rootfs_image"; \
+					docker push $$rootfs_image; \
+				fi; \
 			fi; \
 		fi; \
 		if [ -n "$$kernel_dir" ]; then \
@@ -87,6 +102,10 @@ docker-push:
 			else \
 				echo "Building kernel image: $$kernel_image"; \
 				docker build -t $$kernel_image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir; \
+				if [ "$(PUSH)" = "true" ]; then \
+					echo "Pushing image: $$kernel_image"; \
+					docker push $$kernel_image; \
+				fi; \
 			fi; \
 		fi;
 
@@ -102,4 +121,4 @@ generate-yaml:
 		fi; \
 	done
 
-build-all: build-rootfs build-kernel
+build-all: build-kernel build-rootfs

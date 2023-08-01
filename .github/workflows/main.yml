@@ -1,0 +1,48 @@
+name: Build and Push docker images
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'images/**'  
+  push:
+    branches: 
+      - main
+    paths:
+      - 'images/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  push-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [amd64, arm64]
+    runs-on: ${{ (matrix.arch == 'arm64' && 'actuated-arm64-8cpu-16gb') || 'ubuntu-22.04' }}
+    steps:  
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Login to Github Packages
+        if: ${{ github.event_name == 'push' }}
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sets PUSH env var for main push
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          echo "PUSH=true" >> $GITHUB_ENV
+
+      - name: Build images
+        working-directory: ./images
+        run: |
+          make build-all
+
+
+
