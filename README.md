@@ -6,7 +6,7 @@
 # Falco drivers tests
 
 This repository automatically runs Falco [scap-open](https://github.com/falcosecurity/libs/tree/master/userspace/libscap/examples/01-open) binary on all supported drivers through Ansible, spawning Firecracker microVMs to test Falco drivers against multiple kernels.  
-You can find list of machines being used [here](./group_vars/all/vars.yml#L18).
+You can find list of machines being used [here](./ansible-playbooks/group_vars/all/vars.yml#L18).
 
 ## Prerequisites
 
