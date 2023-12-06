@@ -14,7 +14,6 @@ RUN dnf groupinstall -y 'Development Tools' && \
 		openssh-server \
 		rsync \
 		systemd && \
-	curl -Lo bpftool.rpm ${URL}/b/bpftool-${HVERSION}.fc38.x86_64.rpm && \
 	curl -Lo sources.rpm ${URL}/k/kernel-devel-${VERSION}.fc38.x86_64.rpm    && \
 	curl -Lo headers.rpm ${URL}/k/kernel-headers-${HVERSION}.fc38.x86_64.rpm && \
 	dnf install -y ./*.rpm && \

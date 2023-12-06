@@ -17,7 +17,6 @@ RUN dnf groupinstall -y 'Development Tools' && \
 		rsync \
 		systemd && \
 	curl -Lo headers.rpm ${APPSTR_URL}/kernel-devel-${VERSION}.el9.x86_64.rpm && \
-	curl -Lo bpftool.rpm ${BASEOS_URL}/bpftool-7.1.0-325.el9.x86_64.rpm && \
 	dnf install -y ./*.rpm && \
 	rm -v ./*.rpm && \
 	mkdir -p /lib/modules/${VERSION}.el9.x86_64/ && \

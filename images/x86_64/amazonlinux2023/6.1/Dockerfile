@@ -25,10 +25,8 @@ RUN dnf groupinstall -y 'Development Tools' && \
 		xargs -I@ curl -Lo headers.rpm ${URL}@ && \
     grep -E 'kernel-devel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo sources.rpm ${URL}@ && \
-    grep -E 'bpftool-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
-		xargs -I@ curl -Lo bpftool.rpm ${URL}@ && \
-	dnf install -y ./headers.rpm ./bpftool.rpm ./sources.rpm && \
-	rm -vf ./headers.rpm ./bpftool.rpm ./sources.rpm && \
+	dnf install -y ./headers.rpm ./sources.rpm && \
+	rm -vf ./headers.rpm ./sources.rpm && \
 	dnf clean all && \
 	rm -rf /var/cache/yum && \
 	mkdir -p /lib/modules/6.1.34-58.102.amzn2023.x86_64/ && \
