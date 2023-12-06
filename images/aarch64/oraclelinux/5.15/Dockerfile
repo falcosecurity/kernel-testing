@@ -21,8 +21,7 @@ RUN yum install -y \
 	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-core-${VERSION}.el9uek.${ARCH}.rpm && \
 	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el9uek.${ARCH}.rpm && \
 	curl -L -o modules.rpm ${URL}/getPackage/kernel-uek-modules-${VERSION}.el9uek.${ARCH}.rpm && \
-	curl -L -o bpftool.rpm ${URL}/getPackage/bpftool-${VERSION}.el9uek.${ARCH}.rpm && \
-	yum install -y ./kernel.rpm ./devel.rpm ./modules.rpm ./bpftool.rpm && \
+	yum install -y ./kernel.rpm ./devel.rpm ./modules.rpm && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \
 	echo "root:root" | chpasswd && \
 	echo 'UseDNS no' >> /etc/ssh/sshd_config && \

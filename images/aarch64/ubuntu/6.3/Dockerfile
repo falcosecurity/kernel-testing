@@ -43,7 +43,6 @@ RUN apt-get update && apt-get install -y \
 		xargs -I@ curl -LO ${URL}@ && \
 	find . -name '*.deb' | xargs -n1 dpkg -i --force-depends && \
 	rm -f *.deb && \
-	find /usr/lib/linux-tools/ -name bpftool -exec ln -s {} /usr/bin/bpftool \; && \
 	sed -ie '/^ConditionVirtualization.*/d' /lib/systemd/system/systemd-timesyncd.service && \
 	echo "" > /etc/machine-id && echo "" > /var/lib/dbus/machine-id  && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \

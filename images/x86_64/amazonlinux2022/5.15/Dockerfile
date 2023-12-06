@@ -25,8 +25,6 @@ RUN dnf groupinstall -y 'Development Tools' && \
 		xargs -I@ curl -Lo headers.rpm ${URL}@ && \
     grep -E 'kernel-devel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo sources.rpm ${URL}@ && \
-    grep -E 'bpftool-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
-		xargs -I@ curl -Lo bpftool.rpm ${URL}@ && \
 	dnf install -y ./*.rpm && \
 	rm -vf ./*.rpm && \
 	dnf clean all && \
