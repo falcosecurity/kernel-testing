@@ -43,7 +43,7 @@ machines:
   - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-aarch64", rootfs: "therealbobo/ubuntu-image:6.3-aarch64", arch: "aarch64"}
 
 builders:
-  - {name: "centos-builder", kernel: "therealbobo/centos-kernel:5.14-x86_64", rootfs: "therealbobo/builder:0.0.1-x86_64", arch: "x86_64"}
+  - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/builder:0.0.1-x86_64", arch: "x86_64"}
   - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/modernprobe-builder:0.0.1-x86_64", arch: "x86_64"}
   - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/builder:0.0.1-aarch64", arch: "aarch64"}
   - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/modernprobe-builder:0.0.1-aarch64", arch: "aarch64"}
