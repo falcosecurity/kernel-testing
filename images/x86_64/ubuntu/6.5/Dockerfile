@@ -1,6 +1,6 @@
 FROM ubuntu:23.04
 
-ARG VERSION=6.3.0-7
+ARG VERSION=6.5.0-17
 ARG URL='http://mirrors.edge.kernel.org/ubuntu/pool/main/l/linux/'
 
 WORKDIR /home/ubuntu

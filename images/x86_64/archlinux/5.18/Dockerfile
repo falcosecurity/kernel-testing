@@ -1,8 +1,8 @@
-FROM archlinux:base
+FROM archlinux:base-20220807.0.72894
 
 WORKDIR /home/ubuntu
 
-RUN echo 'Server=https://archive.archlinux.org/repos/2022/08/04/$repo/os/$arch' > /etc/pacman.d/mirrorlist && \
+RUN printf 'SigLevel = Never\nServer=https://archive.archlinux.org/repos/2022/08/04/$repo/os/$arch' > /etc/pacman.d/mirrorlist && \
 pacman -Syyu --noconfirm && \
 	pacman -S --noconfirm \
 		clang \

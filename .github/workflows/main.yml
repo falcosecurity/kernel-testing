@@ -21,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        architecture: [amd64, arm64]
+        arch: [amd64, arm64]
     runs-on: ${{ (matrix.arch == 'arm64' && 'actuated-arm64-8cpu-16gb') || 'ubuntu-22.04' }}
     steps:  
       - name: Checkout repo

@@ -1,6 +1,6 @@
 FROM quay.io/centos/centos:stream8
 
-ARG VERSION=4.18.0-497
+ARG VERSION=4.18.0-536
 ARG BASEOS_URL='http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages'
 
 RUN dnf groupinstall -y 'Development Tools' && \
