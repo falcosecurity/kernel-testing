@@ -1,20 +1,20 @@
-name: Main CI
+name: PR CI
 on:
-  push:
+  pull_request:
     branches: 
       - main
     paths:
       - 'images/**'
 
 concurrency:
-  group: main_push_images
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
-  push-images:
+  build-images:
     uses: ./.github/workflows/reusable_build_images.yml
     with:
-      push: true
+      push: false
       is_latest: false
-      version: 'main'
+      version: '${{ github.run_id }}'
     secrets: inherit

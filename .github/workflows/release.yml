@@ -1,0 +1,17 @@
+name: Release CI
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: release_push_images
+  cancel-in-progress: true
+
+jobs:
+  release-images:
+    uses: ./.github/workflows/reusable_build_images.yml
+    with:
+      push: true
+      is_latest: true
+      version: ${{ github.event.release.tag_name }}
+    secrets: inherit
