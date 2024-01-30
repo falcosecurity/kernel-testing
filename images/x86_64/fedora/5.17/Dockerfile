@@ -2,7 +2,7 @@ FROM fedora:36
 
 ARG VERSION=5.17.5-300
 ARG HVERSION=5.17.0-300
-ARG URL='https://mirrors.kernel.org/fedora/releases/36/Everything/x86_64/os/Packages'
+ARG URL='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/36/Everything/x86_64/os/Packages'
 
 RUN dnf groupinstall -y 'Development Tools' && \
 	dnf install -y \

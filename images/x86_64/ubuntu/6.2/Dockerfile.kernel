@@ -1,6 +1,6 @@
 FROM initrd-builder:0.0.1 AS builder
 
-ARG VERSION=6.2.0-26-generic
+ARG VERSION=6.2.0-41-generic
 ARG URL='http://mirrors.edge.kernel.org/ubuntu/pool/main/l/linux/'
 
 WORKDIR /home/ubuntu

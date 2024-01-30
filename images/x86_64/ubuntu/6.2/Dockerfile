@@ -1,6 +1,6 @@
 FROM ubuntu:22.04
 
-ARG VERSION=6.2.0-26-generic
+ARG VERSION=6.2.0-41-generic
 
 WORKDIR /home/ubuntu
 
