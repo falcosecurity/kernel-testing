@@ -16,6 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Job responsible to test the build of the images and, only on main CI, to push them too.
   push-images:
     strategy:
       fail-fast: false
@@ -42,7 +43,15 @@ jobs:
       - name: Build images
         working-directory: ./images
         run: |
+          touch failed.txt
           make build-all
 
+      - name: Check failures
+        working-directory: ./images
+        run: |
+          if [ -s failed.txt ]; then
+            cat failed.txt
+            exit 1;
+          fi
 
 

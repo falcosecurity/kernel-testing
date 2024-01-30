@@ -11,7 +11,7 @@ builder:
 		echo "Dry run: Building builder image: docker build -t $(REPOSITORY)/builder:0.0.1-$(ARCH) builder"; \
 	else \
 		echo "Building modernprobe-builder image"; \
-		docker build -t $(REPOSITORY)/builder:0.0.1-$(ARCH) builder; \
+		docker build -t $(REPOSITORY)/builder:0.0.1-$(ARCH) builder || echo "FAIL: builder" >> failed.txt; \
 		if [ "$(PUSH)" = "true" ]; then \
 			echo "Pushing image: $(REPOSITORY)/builder:0.0.1-$(ARCH)"; \
 			docker push $(REPOSITORY)/builder:0.0.1-$(ARCH); \
@@ -23,7 +23,7 @@ modernprobe-builder:
 		echo "Dry run: Building modernprobe-builder image: docker build -t $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH) modernprobe-builder"; \
 	else \
 		echo "Building modernprobe-builder image"; \
-		docker build -t $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH) modernprobe-builder; \
+		docker build -t $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH) modernprobe-builder || echo "FAIL: modernprobe-builder" >> failed.txt; \
 		if [ "$(PUSH)" = "true" ]; then \
 			echo "Pushing image: $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH)"; \
 			docker push $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH); \
@@ -35,7 +35,7 @@ initrd-builder:
 		echo "Dry run: Building initrd-builder image: docker build -t initrd-builder:0.0.1 initrd-builder"; \
 	else \
 		echo "Building initrd-builder image"; \
-		docker build -t initrd-builder:0.0.1 initrd-builder; \
+		docker build -t initrd-builder:0.0.1 initrd-builder || echo "FAIL: initrd-builder" >> failed.txt; \
 	fi
 
 build-rootfs:
@@ -47,7 +47,7 @@ build-rootfs:
 			echo "Dry run: Building rootfs image: docker build -t $$image $$rootfs_dir"; \
 		else \
 			echo "Building rootfs image: $$image"; \
-			docker build -t $$image $$rootfs_dir; \
+			docker build -t $$image $$rootfs_dir || echo "FAIL: $$image" >> failed.txt; \
 			if [ "$(PUSH)" = "true" ]; then \
 				echo "Pushing image: $$image"; \
 				docker push $$image; \
@@ -66,7 +66,7 @@ build-kernel: initrd-builder
 			echo "Dry run: Building kernel image: docker build -t $$image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir"; \
 		else \
 			echo "Building kernel image: $$image"; \
-			docker build -t $$image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir; \
+			docker build -t $$image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir || echo "FAIL: $$image" >> failed.txt; \
 			if [ "$(PUSH)" = "true" ]; then \
 				echo "Pushing image: $$image"; \
 				docker push $$image; \
@@ -78,36 +78,36 @@ build-kernel: initrd-builder
 
 %: initrd-builder
 	@version=$$(basename $@); \
-		distro=$$(basename $$(dirname $@)); \
-		arch=$(ARCH); \
-		rootfs_dir=$$(find . -type d -path "./$$arch/$$distro/$$version"); \
-		kernel_dir=$$(find . -type d -path "./$$arch/$$distro/$$version"); \
-		rootfs_image=$(REPOSITORY)/$$distro-image:$$version-$$arch; \
-		kernel_image=$(REPOSITORY)/$$distro-kernel:$$version-$$arch; \
-		if [ -n "$$rootfs_dir" ]; then \
-			if [ "$(DRY_RUN)" = "true" ]; then \
-				echo "Dry run: Building rootfs image: docker build -t $$rootfs_image $$rootfs_dir"; \
-			else \
-				echo "Building rootfs image: $$rootfs_image"; \
-				docker build -t $$rootfs_image $$rootfs_dir; \
-				if [ "$(PUSH)" = "true" ]; then \
-					echo "Pushing image: $$rootfs_image"; \
-					docker push $$rootfs_image; \
-				fi; \
+	distro=$$(basename $$(dirname $@)); \
+	arch=$(ARCH); \
+	rootfs_dir=$$(find . -type d -path "./$$arch/$$distro/$$version"); \
+	kernel_dir=$$(find . -type d -path "./$$arch/$$distro/$$version"); \
+	rootfs_image=$(REPOSITORY)/$$distro-image:$$version-$$arch; \
+	kernel_image=$(REPOSITORY)/$$distro-kernel:$$version-$$arch; \
+	if [ -n "$$rootfs_dir" ]; then \
+		if [ "$(DRY_RUN)" = "true" ]; then \
+			echo "Dry run: Building rootfs image: docker build -t $$rootfs_image $$rootfs_dir"; \
+		else \
+			echo "Building rootfs image: $$rootfs_image"; \
+			docker build -t $$rootfs_image $$rootfs_dir; \
+			if [ "$(PUSH)" = "true" ]; then \
+				echo "Pushing image: $$rootfs_image"; \
+				docker push $$rootfs_image; \
 			fi; \
 		fi; \
-		if [ -n "$$kernel_dir" ]; then \
-			if [ "$(DRY_RUN)" = "true" ]; then \
-				echo "Dry run: Building kernel image: docker build -t $$kernel_image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir"; \
-			else \
-				echo "Building kernel image: $$kernel_image"; \
-				docker build -t $$kernel_image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir; \
-				if [ "$(PUSH)" = "true" ]; then \
-					echo "Pushing image: $$kernel_image"; \
-					docker push $$kernel_image; \
-				fi; \
+	fi; \
+	if [ -n "$$kernel_dir" ]; then \
+		if [ "$(DRY_RUN)" = "true" ]; then \
+			echo "Dry run: Building kernel image: docker build -t $$kernel_image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir"; \
+		else \
+			echo "Building kernel image: $$kernel_image"; \
+			docker build -t $$kernel_image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir; \
+			if [ "$(PUSH)" = "true" ]; then \
+				echo "Pushing image: $$kernel_image"; \
+				docker push $$kernel_image; \
 			fi; \
-		fi;
+		fi; \
+	fi;
 
 generate-yaml:
 	@echo "machines:" > $(YAML_FILE)
