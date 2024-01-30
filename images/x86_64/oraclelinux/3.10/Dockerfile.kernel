@@ -37,15 +37,15 @@ RUN yum groupinstall -y 'Development Tools' && \
 	yum install -y gcc elfutils-libelf-devel && \
 	mkdir src && \
 	cd src && \
-	curl -Lo source.rpm 'https://oss.oracle.com/ol7/SRPMS-updates/kernel-3.10.0-1160.92.1.0.2.el7.src.rpm' && \
+	curl -Lo source.rpm 'https://oss.oracle.com/ol7/SRPMS-updates/kernel-${VERSION}.el7.src.rpm' && \
 	rpm2cpio source.rpm  > source.cpio && \
 	cpio -idmv < ./source.cpio  && \
-	tar -xaf linux-3.10.0-1160.92.1.el7.tar.xz && \
+	tar -xaf linux-3.10.*.tar.xz && \
 	cd .. && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	find src -name virtio_mmio.c -exec cp -v {} . \; && \
 	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/3.10.0-1160.92.1.0.2.el7.x86_64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el7.x86_64/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 
