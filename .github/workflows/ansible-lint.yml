@@ -1,20 +1,18 @@
 name: ansible-lint
 on:
-    pull_request:
+  pull_request:
 
 
 jobs:
-    build:
-        name: Ansible Lint
-        runs-on: ubuntu-latest
+  build:
+    name: Ansible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          fetch-depth: 0
 
-        steps:
-            - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-              with:
-                  fetch-depth: 0
-
-            - name: Run ansible-lint
-              # replace `main` with any valid ref, or tags like `v6`
-              uses: ansible/ansible-lint-action@v6.3.0 # the latest version has a bug that does not run in online mode
-              with:
-                  path: "ansible-playbooks/" 
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint-action@v6.3.0 # the latest version has a bug that does not run in online mode
+        with:
+          path: "ansible-playbooks/" 

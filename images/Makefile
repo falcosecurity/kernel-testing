@@ -1,5 +1,7 @@
 DRY_RUN := false
 PUSH := false
+LATEST := false
+TAG ?= main
 REPOSITORY := ghcr.io/falcosecurity/kernel-testing
 ARCH ?= $(shell uname -m)
 YAML_FILE := images.yaml
@@ -8,28 +10,41 @@ YAML_FILE := images.yaml
 
 builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
-		echo "Dry run: Building builder image: docker build -t $(REPOSITORY)/builder:0.0.1-$(ARCH) builder"; \
+		echo "Dry run: Building builder image: docker build -t $(REPOSITORY)/builder:$(ARCH)-$(TAG)"; \
 	else \
 		echo "Building modernprobe-builder image"; \
-		docker build -t $(REPOSITORY)/builder:0.0.1-$(ARCH) builder || echo "FAIL: builder" >> failed.txt; \
+		image=$(REPOSITORY)/builder:$(ARCH); \
+		docker build -t $$image-$(TAG) builder || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 		if [ "$(PUSH)" = "true" ]; then \
-			echo "Pushing image: $(REPOSITORY)/builder:0.0.1-$(ARCH)"; \
-			docker push $(REPOSITORY)/builder:0.0.1-$(ARCH); \
+			echo "Pushing image: $$image-$(TAG)"; \
+			docker push $$image-$(TAG); \
+			if [ "$(LATEST)" = "true" ]; then \
+				echo "Pushing image: $$image-latest"; \
+				docker tag $$image-$(TAG) $$image-latest; \
+				docker push $$image-latest; \
+			fi; \
 		fi; \
 	fi
 
 modernprobe-builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
-		echo "Dry run: Building modernprobe-builder image: docker build -t $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH) modernprobe-builder"; \
+		echo "Dry run: Building modernprobe-builder image: docker build -t $(REPOSITORY)/modernprobe-builder:$(TAG)-$(ARCH) modernprobe-builder"; \
 	else \
 		echo "Building modernprobe-builder image"; \
-		docker build -t $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH) modernprobe-builder || echo "FAIL: modernprobe-builder" >> failed.txt; \
+		image=$(REPOSITORY)/modernprobe-builder:$(ARCH); \
+		docker build -t $$image-$(TAG) modernprobe-builder || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 		if [ "$(PUSH)" = "true" ]; then \
-			echo "Pushing image: $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH)"; \
-			docker push $(REPOSITORY)/modernprobe-builder:0.0.1-$(ARCH); \
+			echo "Pushing image: $$image-$(TAG)"; \
+			docker push $$image-$(TAG); \
+			if [ "$(LATEST)" = "true" ]; then \
+				echo "Pushing image: $$image-latest"; \
+				docker tag $$image-$(TAG) $$image-latest; \
+				docker push $$image-latest; \
+			fi; \
 		fi; \
 	fi
 
+# No need to push intrd-builder image; it is just used locally as base to other images.
 initrd-builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
 		echo "Dry run: Building initrd-builder image: docker build -t initrd-builder:0.0.1 initrd-builder"; \
@@ -44,15 +59,21 @@ build-rootfs:
 		distro=$$(basename $$(dirname $$rootfs_dir)); \
 		image=$(REPOSITORY)/$$distro-image:$$version-$(ARCH); \
 		if [ "$(DRY_RUN)" = "true" ]; then \
-			echo "Dry run: Building rootfs image: docker build -t $$image $$rootfs_dir"; \
+			echo "Dry run: Building rootfs image: docker build -t $$image-$(TAG) $$rootfs_dir"; \
 		else \
-			echo "Building rootfs image: $$image"; \
-			docker build -t $$image $$rootfs_dir || echo "FAIL: $$image" >> failed.txt; \
+			echo "Building rootfs image: $$image-$(TAG)"; \
+			docker build -t $$image-$(TAG) $$rootfs_dir || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 			if [ "$(PUSH)" = "true" ]; then \
-				echo "Pushing image: $$image"; \
-				docker push $$image; \
+				echo "Pushing image: $$image-$(TAG)"; \
+				docker push $$image-$(TAG); \
+				if [ "$(LATEST)" = "true" ]; then \
+					echo "Pushing image: $$image-latest"; \
+					docker tag $$image-$(TAG) $$image-latest; \
+					docker push $$image-latest; \
+				fi; \
 			fi; \
-			docker image rm -f $$image; \
+			docker image rm -f $$image-$(TAG); \
+			docker image rm -f $$image-latest; \
 			docker builder prune -f -a; \
 		fi; \
 	done
@@ -63,15 +84,21 @@ build-kernel: initrd-builder
 		distro=$$(basename $$(dirname $$kernel_dir)); \
 		image=$(REPOSITORY)/$$distro-kernel:$$version-$(ARCH); \
 		if [ "$(DRY_RUN)" = "true" ]; then \
-			echo "Dry run: Building kernel image: docker build -t $$image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir"; \
+			echo "Dry run: Building kernel image: docker build -t $$image-$(TAG) -f $$kernel_dir/Dockerfile.kernel $$kernel_dir"; \
 		else \
-			echo "Building kernel image: $$image"; \
-			docker build -t $$image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir || echo "FAIL: $$image" >> failed.txt; \
+			echo "Building kernel image: $$image-$(TAG)"; \
+			docker build -t $$image-$(TAG) -f $$kernel_dir/Dockerfile.kernel $$kernel_dir || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 			if [ "$(PUSH)" = "true" ]; then \
-				echo "Pushing image: $$image"; \
-				docker push $$image; \
+				echo "Pushing image: $$image-$(TAG)"; \
+				docker push $$image-$(TAG); \
+				if [ "$(LATEST)" = "true" ]; then \
+					echo "Pushing image: $$image-latest"; \
+					docker tag $$image-$(TAG) $$image-latest; \
+					docker push $$image-latest; \
+				fi; \
 			fi; \
-			docker image rm -f $$image; \
+			docker image rm -f $$image-$(TAG); \
+			docker image rm -f $$image-latest; \
 			docker builder prune -f -a; \
 		fi; \
 	done

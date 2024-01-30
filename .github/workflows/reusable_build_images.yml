@@ -1,0 +1,69 @@
+name: Build and Push docker images
+on:
+  workflow_call:    
+    inputs:
+      version:
+        description: 'docker images version to be built/tagged'
+        type: string
+        required: false
+        default: 'main'
+      push:
+        description: 'whether to push images or build only'
+        type: boolean
+        required: false
+        default: false
+      is_latest:
+        description: 'whether we need to also push latest images'
+        type: boolean
+        required: false
+        default: false
+
+jobs:
+  # Job responsible to test the build of the images and, only on main CI, to push them too.
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ (matrix.arch == 'arm64' && 'actuated-arm64-8cpu-16gb') || 'ubuntu-22.04' }}
+    steps:  
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Login to Github Packages
+        if: inputs.push
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set PUSH env var
+        if: inputs.push
+        run: |
+          echo "PUSH=true" >> $GITHUB_ENV
+          
+      - name: Set LATEST env var
+        if: inputs.is_latest
+        run: |
+          echo "LATEST=true" >> $GITHUB_ENV
+          
+      - name: Set TAG env var
+        run: |
+          echo "TAG=${{ inputs.version }}" >> $GITHUB_ENV
+
+      - name: Build images
+        working-directory: ./images
+        run: |
+          touch failed.txt
+          make build-all
+
+      - name: Check failures
+        working-directory: ./images
+        run: |
+          if [ -s failed.txt ]; then
+            cat failed.txt
+            exit 1;
+          fi
+
+
