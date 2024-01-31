@@ -27,7 +27,7 @@ RUN touch .placeholder && \
 	cpio -idmv < ../modules-core.cpio && \
 	find . -name '*.xz' -exec xz -d {} \; && \
 	VMLINUX=$(find lib/modules -name vmlinuz) ; \
-	SKIP=$(objdump -EL -b binary -D -m aarch64 $VMLINUX | \
+	SKIP=$(objdump -EL -b binary -D -m ${ARCH} $VMLINUX | \
 		grep '00088b1f' | awk '{print $1}' | cut -d: -f1 | \
 		tr '[:lower:]' '[:upper:]' | xargs -I@ printf "%d" 0x@ ) ; \
 	dd if=$VMLINUX of=/home/ubuntu/extracted/vmlinux.gz bs=1 skip=$SKIP && \
@@ -37,6 +37,11 @@ RUN touch .placeholder && \
 
 FROM fedora:38 as kmod-builder
 
+ARG VERSION
+ARG HVERSION
+ARG ARCH
+ARG URL
+
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted /home/ubuntu/extracted/
 COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
@@ -45,7 +50,7 @@ COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
 RUN dnf groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://gitlab.com/cki-project/kernel-ark/-/raw/fedora-6.2/drivers/virtio/virtio_mmio.c' && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/6.2.9-300.fc38.aarch64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.fc38.${ARCH}/" make
 
 
 FROM initrd-builder:0.0.1 AS stage2

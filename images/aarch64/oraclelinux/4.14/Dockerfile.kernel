@@ -20,6 +20,9 @@ RUN touch .placeholder && \
 
 FROM amazonlinux:2 as kmod-builder
 
+ARG VERSION
+ARG URL
+
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
 COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
@@ -29,7 +32,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	curl -Lo libdtrace-devel.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64/getPackage/libdtrace-ctf-devel-1.1.0-2.el7.aarch64.rpm && \
 	curl -Lo libdtrace.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64/getPackage/libdtrace-ctf-1.1.0-2.el7.aarch64.rpm && \
 	yum install -y --skip-broken ./libdtrace.rpm ./libdtrace-devel.rpm && \
-	curl -Lo source.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64/getPackageSource/kernel-uek-4.14.35-2047.527.2.el7uek.src.rpm && \
+	curl -Lo source.rpm https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64/getPackageSource/kernel-uek-${VERSION}.el7uek.src.rpm && \
 	mkdir src && \
 	cd src && \
 	rpm2cpio ../source.rpm  > source.cpio  && \
@@ -45,7 +48,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	ln -s /usr/bin/nm      /opt/oracle/oracle-armtoolset-1/root/bin/nm  && \
 	ln -s /usr/bin/objdump /opt/oracle/oracle-armtoolset-1/root/bin/objdump && \
 	ln -s /usr/bin/objcopy /opt/oracle/oracle-armtoolset-1/root/bin/objcopy && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/4.14.35-2047.527.2.el7uek.aarch64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el7uek.aarch64/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 

@@ -38,7 +38,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v5.4/drivers/virtio/virtio_mmio.c' && \
 	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el8uek.x86_64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el8uek.${ARCH}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 

@@ -1,17 +1,16 @@
-FROM archlinux:base
-
-ARG VERSION=6.0.12.arch1-1
-ARG URL='https://archive.archlinux.org/packages'
+FROM archlinux/archlinux:base-20221211.0.109768
 
 WORKDIR /home/ubuntu
 
-RUN pacman -Syyu --noconfirm && \
+RUN printf 'SigLevel = Never\nServer=https://archive.archlinux.org/repos/2022/12/11/$repo/os/$arch' > /etc/pacman.d/mirrorlist && \
+pacman -Syyu --noconfirm && \
 	pacman -S --noconfirm \
 		clang \
 		cmake \
 		gcc \
 		git \
 		libcap \
+		linux-headers \
 		llvm \
 		make \
 		openssh \
@@ -19,9 +18,6 @@ RUN pacman -Syyu --noconfirm && \
 		rsync \
 		wget && \
 	yes | pacman -Scc && \
-	curl -Lo headers.tar.zst ${URL}/l/linux-headers/linux-headers-${VERSION}-x86_64.pkg.tar.zst && \
-	pacman -U --noconfirm ./headers.tar.zst && \
-	rm -v ./headers.tar.zst && \
 	ln -sf /usr/share/zoneinfo/US/Eastern /etc/localtime && \
 	echo 'LANG=en_US.UTF-8' > /etc/locale.gen && \
 	locale-gen && \

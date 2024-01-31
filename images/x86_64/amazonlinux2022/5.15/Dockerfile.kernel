@@ -41,7 +41,7 @@ COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
 RUN dnf groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v5.15/drivers/virtio/virtio_mmio.c' && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/5.15.73-45.135.amzn2022.x86_64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.135.amzn2022.${ARCH}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/

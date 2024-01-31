@@ -41,7 +41,7 @@ COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
 RUN yum groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v4.19/drivers/virtio/virtio_mmio.c' && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.amzn2.x86_64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.amzn2.${ARCH}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
