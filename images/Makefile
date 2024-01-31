@@ -28,7 +28,7 @@ builder:
 
 modernprobe-builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
-		echo "Dry run: Building modernprobe-builder image: docker build -t $(REPOSITORY)/modernprobe-builder:$(TAG)-$(ARCH) modernprobe-builder"; \
+		echo "Dry run: Building modernprobe-builder image: docker build -t $(REPOSITORY)/modernprobe-builder:$(ARCH)-$(TAG) modernprobe-builder"; \
 	else \
 		echo "Building modernprobe-builder image"; \
 		image=$(REPOSITORY)/modernprobe-builder:$(ARCH); \
