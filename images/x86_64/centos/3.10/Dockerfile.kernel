@@ -37,13 +37,13 @@ RUN yum groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	mkdir src && \
 	cd src && \
-	curl -Lo source.rpm 'https://archive.kernel.org/centos-vault/7.9.2009/os/Source/SPackages/kernel-${VERSION}.el7.src.rpm' && \
+	curl -Lo source.rpm 'https://archive.kernel.org/centos-vault/7.9.2009/os/Source/SPackages/kernel-'${VERSION}'.el7.src.rpm' && \
 	rpm2cpio source.rpm  > source.cpio && \
 	cpio -idmv < source.cpio && \
-	tar -xaf 'linux-${VERSION}.el7.tar.xz' && \
+	tar -xaf 'linux-'${VERSION}'.el7.tar.xz' && \
 	cd .. && \
 	find src -name 'virtio_mmio.c' -exec cp -v {} . \; && \
-	KERNEL_DIR='/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el7.${ARCH}/' make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el7.${ARCH}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/

@@ -1,7 +1,10 @@
-FROM initrd-builder:0.0.1 AS stage1
-
 ARG VERSION=4.14.35-2047.527.2
 ARG URL='https://yum.oracle.com/repo/OracleLinux/OL7/latest/aarch64'
+
+FROM initrd-builder:0.0.1 AS stage1
+
+ARG VERSION
+ARG URL
 
 WORKDIR /home/ubuntu
 

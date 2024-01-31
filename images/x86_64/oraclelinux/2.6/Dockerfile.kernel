@@ -37,7 +37,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	yum install -y gcc && \
 	mkdir src && \
 	cd src && \
-	curl -Lo source.rpm 'https://oss.oracle.com/ol6/SRPMS-updates/kernel-uek-${VERSION}.el6uek.src.rpm' && \
+	curl -Lo source.rpm 'https://oss.oracle.com/ol6/SRPMS-updates/kernel-uek-'${VERSION}'.el6uek.src.rpm' && \
 	rpm2cpio source.rpm  > source.cpio && \
 	cpio -idmv < ./source.cpio  && \
 	tar -xaf linux-2.6.*.tar.bz2 && \
