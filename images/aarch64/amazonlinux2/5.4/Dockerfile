@@ -1,6 +1,6 @@
 FROM amazonlinux:2
 
-ARG VERSION=5.4.247-162
+ARG VERSION=5.4.247-162.350
 ARG URL='http://amazonlinux.us-east-1.amazonaws.com/2/extras/kernel-5.4/latest/aarch64'
 
 RUN yum install -y \
@@ -23,9 +23,9 @@ RUN yum install -y \
 	URL=$(cat mirror.list) && \
 	curl -sLO "${URL}"/repodata/primary.xml.gz && \
 	gunzip primary.xml.gz && \
-    grep -E 'kernel-headers-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+    grep -E 'kernel-headers-'${VERSION}'.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo headers.rpm ${URL}/@ && \
-    grep -E 'kernel-devel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+    grep -E 'kernel-devel-'${VERSION}'.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo sources.rpm ${URL}/@ && \
 	yum install -y ./*.rpm && \
 	rm -v ./*.rpm && \
@@ -37,8 +37,8 @@ RUN yum install -y \
 	rm -vf cmake-3.19.8-Linux-aarch64.tar.gz && \
 	mv cmake-3.19.8-Linux-aarch64     /opt/cmake-3.19.8 && \
 	ln -sf  /opt/cmake-3.19.8/bin/*    /usr/bin/ && \
-	mkdir -p  /lib/modules/${VERSION}.350.amzn2.aarch64/ && \
-	ln -s /usr/src/kernels/${VERSION}.350.amzn2.aarch64/ /lib/modules/${VERSION}.350.amzn2.aarch64/build && \
+	mkdir -p  /lib/modules/${VERSION}.amzn2.aarch64/ && \
+	ln -s /usr/src/kernels/${VERSION}.amzn2.aarch64/ /lib/modules/${VERSION}.amzn2.aarch64/build && \
 	rm -vf /usr/bin/gcc /usr/bin/g++ && \
 	update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc10-gcc 100 --slave /usr/bin/g++ g++ /usr/bin/gcc10-c++ && \
 	update-alternatives --auto gcc && \

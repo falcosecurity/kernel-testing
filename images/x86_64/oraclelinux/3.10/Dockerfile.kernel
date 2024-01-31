@@ -37,7 +37,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	yum install -y gcc elfutils-libelf-devel && \
 	mkdir src && \
 	cd src && \
-	curl -Lo source.rpm 'https://oss.oracle.com/ol7/SRPMS-updates/kernel-${VERSION}.el7.src.rpm' && \
+	curl -Lo source.rpm 'https://oss.oracle.com/ol7/SRPMS-updates/kernel-'${VERSION}'.el7.src.rpm' && \
 	rpm2cpio source.rpm  > source.cpio && \
 	cpio -idmv < ./source.cpio  && \
 	tar -xaf linux-3.10.*.tar.xz && \
