@@ -13,9 +13,9 @@ RUN touch .placeholder && \
 	URL=$(cat mirror.list) && \
 	curl -sLO "${URL}"repodata/primary.xml.gz && \
 	gunzip primary.xml.gz && \
-    grep -E 'kernel-'${VERSION}'.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+    grep -E 'kernel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo kernel.rpm ${URL}@ && \
-    grep -E 'kernel-devel-'${VERSION}'.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+    grep -E 'kernel-devel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo headers.rpm ${URL}@ && \
 	rpm2cpio kernel.rpm > kernel.cpio && \
 	rpm2cpio headers.rpm > headers.cpio && \

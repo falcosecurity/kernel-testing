@@ -23,9 +23,9 @@ RUN yum install -y \
 	URL=$(cat mirror.list) && \
 	curl -sLO "${URL}"/repodata/primary.xml.gz && \
 	gunzip primary.xml.gz && \
-    grep -E 'kernel-headers-'${VERSION}'.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+    grep -E 'kernel-headers-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo headers.rpm ${URL}/@ && \
-    grep -E 'kernel-devel-'${VERSION}'.rpm' primary.xml | grep href | cut -d\"  -f2 | \
+    grep -E 'kernel-devel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo sources.rpm ${URL}/@ && \
 	yum install -y ./*.rpm && \
 	rm -v ./*.rpm && \
