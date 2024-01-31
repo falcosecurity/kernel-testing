@@ -10,8 +10,8 @@ user: root
 # Machine Configuration #
 #########################
 
-# Images version to be used.
-version: main
+# Images tag to be used.
+tag: main
 
 # Each machine entry requires the following fields
 # name: the name given to the vm;
@@ -19,37 +19,38 @@ version: main
 # rootfs: reference to an OCI image used as base rootfs for the vm.
 # arch: architecture of the kernel and base images. (x86_64/aarch64).
 machines:
-  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-x86_64-{{ version }}", rootfs: "therealbobo/amazonlinux2022-image:5.15-x86_64-{{ version }}", arch: "x86_64"}  # noqa: yaml[line-length]
-  - {name: "amazonlinux2023-6.1", kernel: "therealbobo/amazonlinux2023-kernel:6.1-x86_64-{{ version }}", rootfs: "therealbobo/amazonlinux2023-image:6.1-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "amazonlinux2-4.19", kernel: "therealbobo/amazonlinux2-kernel:4.19-x86_64-{{ version }}", rootfs: "therealbobo/amazonlinux2-image:4.19-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "amazonlinux2-5.10", kernel: "therealbobo/amazonlinux2-kernel:5.10-x86_64-{{ version }}", rootfs: "therealbobo/amazonlinux2-image:5.10-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "amazonlinux2-5.15", kernel: "therealbobo/amazonlinux2-kernel:5.15-x86_64-{{ version }}", rootfs: "therealbobo/amazonlinux2-image:5.15-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-x86_64-{{ version }}", rootfs: "therealbobo/amazonlinux2-image:5.4-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "archlinux-6.0", kernel: "therealbobo/archlinux-kernel:6.0-x86_64-{{ version }}", rootfs: "therealbobo/archlinux-image:6.0-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "centos-3.10", kernel: "therealbobo/centos-kernel:3.10-x86_64-{{ version }}", rootfs: "therealbobo/centos-image:3.10-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "centos-4.18", kernel: "therealbobo/centos-kernel:4.18-x86_64-{{ version }}", rootfs: "therealbobo/centos-image:4.18-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "centos-5.14", kernel: "therealbobo/centos-kernel:5.14-x86_64-{{ version }}", rootfs: "therealbobo/centos-image:5.14-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "fedora-5.17", kernel: "therealbobo/fedora-kernel:5.17-x86_64-{{ version }}", rootfs: "therealbobo/fedora-image:5.17-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "fedora-5.8", kernel: "therealbobo/fedora-kernel:5.8-x86_64-{{ version }}", rootfs: "therealbobo/fedora-image:5.8-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "fedora-6.2", kernel: "therealbobo/fedora-kernel:6.2-x86_64-{{ version }}", rootfs: "therealbobo/fedora-image:6.2-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "oraclelinux-3.10", kernel: "therealbobo/oraclelinux-kernel:3.10-x86_64-{{ version }}", rootfs: "therealbobo/oraclelinux-image:3.10-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "oraclelinux-4.14", kernel: "therealbobo/oraclelinux-kernel:4.14-x86_64-{{ version }}", rootfs: "therealbobo/oraclelinux-image:4.14-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-x86_64-{{ version }}", rootfs: "therealbobo/oraclelinux-image:5.15-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "oraclelinux-5.4", kernel: "therealbobo/oraclelinux-kernel:5.4-x86_64-{{ version }}", rootfs: "therealbobo/oraclelinux-image:5.4-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "ubuntu-4.15", kernel: "therealbobo/ubuntu-kernel:4.15-x86_64-{{ version }}", rootfs: "therealbobo/ubuntu-image:4.15-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-x86_64-{{ version }}", rootfs: "therealbobo/ubuntu-image:6.3-x86_64-{{ version }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "amazonlinux2022-5.15", kernel: "therealbobo/amazonlinux2022-kernel:5.15-aarch64-{{ version }}", rootfs: "therealbobo/amazonlinux2022-image:5.15-aarch64-{{ version }}", arch: "aarch64"}  # noqa: yaml[line-length]
-  - {name: "amazonlinux2-5.4", kernel: "therealbobo/amazonlinux2-kernel:5.4-aarch64-{{ version }}", rootfs: "therealbobo/amazonlinux2-image:5.4-aarch64-{{ version }}", arch: "aarch64"} # noqa: yaml[line-length]
-  - {name: "fedora-6.2", kernel: "therealbobo/fedora-kernel:6.2-aarch64-{{ version }}", rootfs: "therealbobo/fedora-image:6.2-aarch64-{{ version }}", arch: "aarch64"} # noqa: yaml[line-length]
-  - {name: "oraclelinux-4.14", kernel: "therealbobo/oraclelinux-kernel:4.14-aarch64-{{ version }}", rootfs: "therealbobo/oraclelinux-image:4.14-aarch64-{{ version }}", arch: "aarch64"} # noqa: yaml[line-length]
-  - {name: "oraclelinux-5.15", kernel: "therealbobo/oraclelinux-kernel:5.15-aarch64-{{ version }}", rootfs: "therealbobo/oraclelinux-image:5.15-aarch64-{{ version }}", arch: "aarch64"} # noqa: yaml[line-length]
-  - {name: "ubuntu-6.3", kernel: "therealbobo/ubuntu-kernel:6.3-aarch64-{{ version }}", rootfs: "therealbobo/ubuntu-image:6.3-aarch64-{{ version }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "amazonlinux2022-5.15", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2022-kernel:5.15-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2022-image:5.15-x86_64-{{ tag }}", arch: "x86_64"}  # noqa: yaml[line-length]
+  - {name: "amazonlinux2023-6.1", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2023-kernel:6.1-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2023-image:6.1-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "amazonlinux2-4.19", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-kernel:4.19-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-image:4.19-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "amazonlinux2-5.10", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-kernel:5.10-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-image:5.10-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "amazonlinux2-5.15", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-kernel:5.15-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-image:5.15-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "amazonlinux2-5.4", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-kernel:5.4-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-image:5.4-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "archlinux-6.0", kernel: "ghcr.io/falcosecurity/kernel-testing/archlinux-kernel:6.0-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/archlinux-image:6.0-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "archlinux-6.7", kernel: "ghcr.io/falcosecurity/kernel-testing/archlinux-kernel:6.7-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/archlinux-image:6.7-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "centos-3.10", kernel: "ghcr.io/falcosecurity/kernel-testing/centos-kernel:3.10-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/centos-image:3.10-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "centos-4.18", kernel: "ghcr.io/falcosecurity/kernel-testing/centos-kernel:4.18-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/centos-image:4.18-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "centos-5.14", kernel: "ghcr.io/falcosecurity/kernel-testing/centos-kernel:5.14-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/centos-image:5.14-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "fedora-5.17", kernel: "ghcr.io/falcosecurity/kernel-testing/fedora-kernel:5.17-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/fedora-image:5.17-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "fedora-5.8", kernel: "ghcr.io/falcosecurity/kernel-testing/fedora-kernel:5.8-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/fedora-image:5.8-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "fedora-6.2", kernel: "ghcr.io/falcosecurity/kernel-testing/fedora-kernel:6.2-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/fedora-image:6.2-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "oraclelinux-3.10", kernel: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-kernel:3.10-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-image:3.10-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "oraclelinux-4.14", kernel: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-kernel:4.14-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-image:4.14-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "oraclelinux-5.15", kernel: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-kernel:5.15-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-image:5.15-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "oraclelinux-5.4", kernel: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-kernel:5.4-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-image:5.4-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "ubuntu-4.15", kernel: "ghcr.io/falcosecurity/kernel-testing/ubuntu-kernel:4.15-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/ubuntu-image:4.15-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "ubuntu-6.5", kernel: "ghcr.io/falcosecurity/kernel-testing/ubuntu-kernel:6.5-x86_64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/ubuntu-image:6.5-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "amazonlinux2022-5.15", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2022-kernel:5.15-aarch64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2022-image:5.15-aarch64-{{ tag }}", arch: "aarch64"}  # noqa: yaml[line-length]
+  - {name: "amazonlinux2-5.4", kernel: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-kernel:5.4-aarch64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/amazonlinux2-image:5.4-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "fedora-6.2", kernel: "ghcr.io/falcosecurity/kernel-testing/fedora-kernel:6.2-aarch64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/fedora-image:6.2-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "oraclelinux-4.14", kernel: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-kernel:4.14-aarch64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-image:4.14-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "oraclelinux-5.15", kernel: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-kernel:5.15-aarch64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/oraclelinux-image:5.15-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "ubuntu-6.5", kernel: "ghcr.io/falcosecurity/kernel-testing/ubuntu-kernel:6.5-aarch64-{{ tag }}", rootfs: "ghcr.io/falcosecurity/kernel-testing/ubuntu-image:6.5-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
 
 builders:
-  - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/builder:0.0.1-x86_64-{{ version }}", arch: "x86_64"}
-  - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/modernprobe-builder:0.0.1-x86_64-{{ version }}", arch: "x86_64"}
-  - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/builder:0.0.1-aarch64-{{ version }}", arch: "aarch64"}
-  - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "therealbobo/modernprobe-builder:0.0.1-aarch64-{{ version }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "ghcr.io/falcosecurity/kernel-testing/builder:x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "ghcr.io/falcosecurity/kernel-testing/modernprobe-builder:x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "ghcr.io/falcosecurity/kernel-testing/builder:aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "ghcr.io/falcosecurity/kernel-testing/modernprobe-builder:aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
 
 output_dir: "~/ansible_output"
 # Number of cpus.
