@@ -24,6 +24,10 @@ RUN touch .placeholder && \
 
 FROM oraclelinux:9 as kmod-builder
 
+ARG VERSION
+ARG ARCH
+ARG URL
+
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
 COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
@@ -33,7 +37,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v5.15/drivers/virtio/virtio_mmio.c' && \
 	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/5.15.0-8.91.4.1.el9uek.aarch64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el9uek.${ARCH}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 

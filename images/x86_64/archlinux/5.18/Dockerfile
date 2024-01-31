@@ -1,4 +1,4 @@
-FROM archlinux:base-20220807.0.72894
+FROM archlinux/archlinux:base-20220807.0.72894
 
 WORKDIR /home/ubuntu
 

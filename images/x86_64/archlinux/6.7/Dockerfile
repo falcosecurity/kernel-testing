@@ -1,24 +1,23 @@
-FROM lopsided/archlinux:latest
-
-ARG VERSION=4.14.15-1
-ARG URL='http://tardis.tiny-vps.com/aarm/packages'
+FROM archlinux/archlinux:base-20240124.0.209208
 
 WORKDIR /home/ubuntu
 
-RUN pacman -Syyu --noconfirm && \
+RUN printf 'SigLevel = Never\nServer=https://archive.archlinux.org/repos/2024/01/24/$repo/os/$arch' > /etc/pacman.d/mirrorlist && \
+pacman -Syyu --noconfirm && \
 	pacman -S --noconfirm \
 		clang \
 		cmake \
 		gcc \
 		git \
 		libcap \
+		linux-headers \
 		llvm \
 		make \
 		openssh \
 		python \
 		rsync \
-		systemd \
 		wget && \
+	yes | pacman -Scc && \
 	ln -sf /usr/share/zoneinfo/US/Eastern /etc/localtime && \
 	echo 'LANG=en_US.UTF-8' > /etc/locale.gen && \
 	locale-gen && \
@@ -27,9 +26,4 @@ RUN pacman -Syyu --noconfirm && \
 	systemctl enable sshd && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \
 	echo 'UseDNS no' >> /etc/ssh/sshd_config && \
-	echo "root:root" | chpasswd && \
-	curl -Lo headers.tar.xz ${URL}/l/linux-aarch64-headers/linux-aarch64-headers-${VERSION}-aarch64.pkg.tar.xz && \
-	pacman -U --noconfirm ./headers.tar.xz && \
-	rm -v ./headers.tar.xz && \
-	ln -s /usr/lib/systemd/systemd /sbin/init && \
-	yes | pacman -Scc || exit 0
+	echo "root:root" | chpasswd

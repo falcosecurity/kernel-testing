@@ -29,8 +29,8 @@ RUN dnf groupinstall -y 'Development Tools' && \
 	rm -vf ./headers.rpm ./sources.rpm && \
 	dnf clean all && \
 	rm -rf /var/cache/yum && \
-	mkdir -p /lib/modules/6.1.34-58.102.amzn2023.x86_64/ && \
-	ln -s /usr/src/kernels/6.1.34-58.102.amzn2023.x86_64/ /lib/modules/6.1.34-58.102.amzn2023.x86_64/build && \
+	mkdir -p /lib/modules/${VERSION}.102.amzn2023.x86_64/ && \
+	ln -s /usr/src/kernels/${VERSION}.102.amzn2023.x86_64/ /lib/modules/${VERSION}.102.amzn2023.x86_64/build && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \
 	echo 'UseDNS no' >> /etc/ssh/sshd_config && \
 	echo "root:root" | chpasswd

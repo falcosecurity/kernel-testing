@@ -30,7 +30,7 @@ RUN yum install -y \
 	rm -vf cmake-3.16.7-Linux-x86_64.tar.gz && \
 	mv cmake-3.16.7-Linux-x86_64   /opt/cmake-3.16.7 && \
 	ln -sf /opt/cmake-3.16.7/bin/* /usr/bin/ && \
-	mkdir -p /lib/modules/5.15.0-8.91.4.1.el9uek.x86_64/ && \
-	ln -s /usr/src/kernels/5.15.0-8.91.4.1.el9uek.x86_64/ /lib/modules/5.15.0-8.91.4.1.el9uek.x86_64/build && \
+	mkdir -p /lib/modules/${VERSION}.el9uek.x86_64/ && \
+	ln -s /usr/src/kernels/${VERSION}.el9uek.x86_64/ /lib/modules/${VERSION}.el9uek.x86_64/build && \
 	yum clean all && \
 	rm -rf /var/cache/yum

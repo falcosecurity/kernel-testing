@@ -28,8 +28,8 @@ RUN dnf groupinstall -y 'Development Tools' && \
 		xargs -I@ curl -Lo sources.rpm ${URL}@ && \
 	dnf install -y ./*.rpm && \
 	rm -f ./*.rpm && \
-	mkdir -p /lib/modules/5.15.73-45.135.amzn2022.aarch64/ && \
-	ln -s /usr/src/kernels/5.15.73-45.135.amzn2022.aarch64/ /lib/modules/5.15.73-45.135.amzn2022.aarch64/build && \
+	mkdir -p /lib/modules/${VERSION}.135.amzn2022.aarch64/ && \
+	ln -s /usr/src/kernels/${VERSION}.135.amzn2022.aarch64/ /lib/modules/${VERSION}.135.amzn2022.aarch64/build && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \
 	echo 'UseDNS no' >> /etc/ssh/sshd_config && \
 	echo "root:root" | chpasswd

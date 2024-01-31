@@ -45,7 +45,7 @@ COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
 RUN dnf groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://gitlab.com/redhat/centos-stream/src/kernel/centos-stream-9/-/raw/main/drivers/virtio/virtio_mmio.c' && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el9.x86_64" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el9.${ARCH}" make
 
 FROM initrd-builder:0.0.1 AS stage2
 COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/

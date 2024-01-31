@@ -1,16 +1,18 @@
 ARG VERSION=2.6.39-400.330.1
 ARG URL='https://yum.oracle.com/repo/OracleLinux/OL6/UEK/latest/x86_64'
+ARG ARCH=x86_64
 
 FROM initrd-builder:0.0.1 AS stage1
 
 ARG VERSION
 ARG URL
+ARG ARCH
 
 WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
-	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-${VERSION}.el6uek.x86_64.rpm && \
-	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el6uek.x86_64.rpm && \
+	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-${VERSION}.el6uek.${ARCH}.rpm && \
+	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el6uek.${ARCH}.rpm && \
 	rpm2cpio kernel.rpm  > kernel.cpio && \
 	rpm2cpio devel.rpm   > devel.cpio  && \
 	mkdir extracted && \
@@ -25,12 +27,11 @@ FROM oraclelinux:7 as kmod-builder
 
 ARG VERSION
 ARG URL
+ARG ARCH
 
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
 COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
-
-COPY /virtio_mmio.c /home/ubuntu/virtio_mmio.c
 
 RUN yum groupinstall -y 'Development Tools' && \
 	yum install -y gcc && \
@@ -44,7 +45,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	find src -name virtio_mmio.c -exec cp -v {} . \; && \
 	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
-	echo KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el6uek.x86_64/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el6uek.${ARCH}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 

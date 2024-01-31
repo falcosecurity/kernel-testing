@@ -7,7 +7,7 @@ WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
 	    apt update && apt install -y file && \
-	curl -Lo kernel.pkg.tar.xz  ${URL}/l/linux-aarch64/linux-aarch64-4.14.15-1-aarch64.pkg.tar.xz && \
+	curl -Lo kernel.pkg.tar.xz  ${URL}/l/linux-aarch64/linux-aarch64-${VERSION}-aarch64.pkg.tar.xz && \
 	mkdir extracted && \
 	cd extracted && \
 	ls ../*.tar.xz | \
