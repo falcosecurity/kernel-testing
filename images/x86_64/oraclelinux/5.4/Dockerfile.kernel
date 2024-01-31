@@ -1,18 +1,18 @@
 ARG VERSION=5.4.17-2136.320.7.1
 ARG URL='https://yum.oracle.com/repo/OracleLinux/OL8/UEKR6/x86_64/'
-ARG ARCH=x86_64
+ARG ARCHITECTURE=x86_64
 
 FROM initrd-builder:0.0.1 AS stage1
 
 ARG VERSION
 ARG URL
-ARG ARCH
+ARG ARCHITECTURE
 
 WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
-	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-${VERSION}.el8uek.${ARCH}.rpm && \
-	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el8uek.${ARCH}.rpm && \
+	curl -L -o kernel.rpm  ${URL}/getPackage/kernel-uek-${VERSION}.el8uek.${ARCHITECTURE}.rpm && \
+	curl -L -o devel.rpm   ${URL}/getPackage/kernel-uek-devel-${VERSION}.el8uek.${ARCHITECTURE}.rpm && \
 	rpm2cpio kernel.rpm  > kernel.cpio && \
 	rpm2cpio devel.rpm   > devel.cpio  && \
 	mkdir extracted && \
@@ -27,7 +27,7 @@ FROM oraclelinux:8 as kmod-builder
 
 ARG VERSION
 ARG URL
-ARG ARCH
+ARG ARCHITECTURE
 
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
@@ -38,7 +38,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v5.4/drivers/virtio/virtio_mmio.c' && \
 	sed -ie 's/virtio-mmio/my-virtio-mmio/g' virtio_mmio.c && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el8uek.${ARCH}/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.el8uek.${ARCHITECTURE}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 

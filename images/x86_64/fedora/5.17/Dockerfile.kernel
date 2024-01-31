@@ -1,22 +1,22 @@
 ARG VERSION=5.17.5-300
 ARG HVERSION=5.17.0-300
 ARG URL='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/36/Everything/x86_64/os/Packages/k/'
-ARG ARCH=x86_64
+ARG ARCHITECTURE=x86_64
 
 FROM initrd-builder:0.0.1 AS stage1
 
 ARG VERSION
 ARG HVERSION
 ARG URL
-ARG ARCH
+ARG ARCHITECTURE
 
 WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
-	curl -Lo kernel.rpm  ${URL}kernel-core-${VERSION}.fc36.${ARCH}.rpm     && \
-	curl -Lo headers.rpm ${URL}kernel-headers-${HVERSION}.fc36.${ARCH}.rpm && \
-	curl -Lo modules.rpm ${URL}kernel-modules-${VERSION}.fc36.${ARCH}.rpm  && \
-	curl -Lo sources.rpm ${URL}kernel-devel-${VERSION}.fc36.${ARCH}.rpm    && \
+	curl -Lo kernel.rpm  ${URL}kernel-core-${VERSION}.fc36.${ARCHITECTURE}.rpm     && \
+	curl -Lo headers.rpm ${URL}kernel-headers-${HVERSION}.fc36.${ARCHITECTURE}.rpm && \
+	curl -Lo modules.rpm ${URL}kernel-modules-${VERSION}.fc36.${ARCHITECTURE}.rpm  && \
+	curl -Lo sources.rpm ${URL}kernel-devel-${VERSION}.fc36.${ARCHITECTURE}.rpm    && \
 	rpm2cpio kernel.rpm  > kernel.cpio  && \
 	rpm2cpio headers.rpm > headers.cpio && \
 	rpm2cpio modules.rpm > modules.cpio && \
@@ -35,7 +35,7 @@ FROM fedora:36 as kmod-builder
 ARG VERSION
 ARG HVERSION
 ARG URL
-ARG ARCH
+ARG ARCHITECTURE
 
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted /home/ubuntu/extracted/
@@ -44,7 +44,7 @@ COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
 RUN dnf groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://gitlab.com/cki-project/kernel-ark/-/raw/fedora-5.17/drivers/virtio/virtio_mmio.c' && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.fc36.${ARCH}/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.fc36.${ARCHITECTURE}/" make
 
 
 FROM initrd-builder:0.0.1 AS stage2
