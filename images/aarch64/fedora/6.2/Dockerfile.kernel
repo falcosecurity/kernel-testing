@@ -1,23 +1,23 @@
 ARG VERSION=6.2.9-300
 ARG HVERSION=6.2.6-300
-ARG ARCH=aarch64
+ARG ARCHITECTURE=aarch64
 ARG URL='https://mirrors.kernel.org/fedora/releases/38/Everything/aarch64/os/Packages/k/'
 
 FROM initrd-builder:0.0.1 AS stage1
 
 ARG VERSION
 ARG HVERSION
-ARG ARCH
+ARG ARCHITECTURE
 ARG URL
 
 WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
-	curl -Lo kernel.rpm  ${URL}kernel-core-${VERSION}.fc38.${ARCH}.rpm     && \
-	curl -Lo headers.rpm ${URL}kernel-headers-${HVERSION}.fc38.${ARCH}.rpm && \
-	curl -Lo modules.rpm ${URL}kernel-modules-${VERSION}.fc38.${ARCH}.rpm  && \
-	curl -Lo sources.rpm ${URL}kernel-devel-${VERSION}.fc38.${ARCH}.rpm    && \
-	curl -Lo modules-core.rpm ${URL}kernel-modules-core-${VERSION}.fc38.${ARCH}.rpm  && \
+	curl -Lo kernel.rpm  ${URL}kernel-core-${VERSION}.fc38.${ARCHITECTURE}.rpm     && \
+	curl -Lo headers.rpm ${URL}kernel-headers-${HVERSION}.fc38.${ARCHITECTURE}.rpm && \
+	curl -Lo modules.rpm ${URL}kernel-modules-${VERSION}.fc38.${ARCHITECTURE}.rpm  && \
+	curl -Lo sources.rpm ${URL}kernel-devel-${VERSION}.fc38.${ARCHITECTURE}.rpm    && \
+	curl -Lo modules-core.rpm ${URL}kernel-modules-core-${VERSION}.fc38.${ARCHITECTURE}.rpm  && \
 	rpm2cpio kernel.rpm  > kernel.cpio  && \
 	rpm2cpio headers.rpm > headers.cpio && \
 	rpm2cpio modules.rpm > modules.cpio && \
@@ -32,7 +32,7 @@ RUN touch .placeholder && \
 	cpio -idmv < ../modules-core.cpio && \
 	find . -name '*.xz' -exec xz -d {} \; && \
 	VMLINUX=$(find lib/modules -name vmlinuz) ; \
-	SKIP=$(objdump -EL -b binary -D -m ${ARCH} $VMLINUX | \
+	SKIP=$(objdump -EL -b binary -D -m ${ARCHITECTURE} $VMLINUX | \
 		grep '00088b1f' | awk '{print $1}' | cut -d: -f1 | \
 		tr '[:lower:]' '[:upper:]' | xargs -I@ printf "%d" 0x@ ) ; \
 	dd if=$VMLINUX of=/home/ubuntu/extracted/vmlinux.gz bs=1 skip=$SKIP && \
@@ -43,9 +43,7 @@ RUN touch .placeholder && \
 FROM fedora:38 as kmod-builder
 
 ARG VERSION
-ARG HVERSION
-ARG ARCH
-ARG URL
+ARG ARCHITECTURE
 
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted /home/ubuntu/extracted/
@@ -55,7 +53,7 @@ COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
 RUN dnf groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://gitlab.com/cki-project/kernel-ark/-/raw/fedora-6.2/drivers/virtio/virtio_mmio.c' && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.fc38.${ARCH}/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.fc38.${ARCHITECTURE}/" make
 
 
 FROM initrd-builder:0.0.1 AS stage2

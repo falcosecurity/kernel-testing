@@ -1,12 +1,12 @@
 ARG VERSION=5.15.117-73.143
 ARG URL='http://amazonlinux.us-east-1.amazonaws.com/2/extras/kernel-5.15/latest/x86_64'
-ARG ARCH=x86_64
+ARG ARCHITECTURE=x86_64
 
 FROM initrd-builder:0.0.1 AS stage1
 
 ARG VERSION
 ARG URL
-ARG ARCH
+ARG ARCHITECTURE
 
 WORKDIR /home/ubuntu
 
@@ -32,7 +32,7 @@ FROM amazonlinux:2 as kmod-builder
 
 ARG VERSION
 ARG URL
-ARG ARCH
+ARG ARCHITECTURE
 
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
@@ -42,7 +42,7 @@ RUN yum groupinstall -y 'Development Tools' && \
 	yum install -y gcc10 && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
 	curl -LO 'https://raw.githubusercontent.com/torvalds/linux/v5.15/drivers/virtio/virtio_mmio.c' && \
-	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.amzn2.${ARCH}/" make
+	KERNEL_DIR="/home/ubuntu/extracted/usr/src/kernels/${VERSION}.amzn2.${ARCHITECTURE}/" make
 
 FROM initrd-builder:0.0.1 AS stage2
 COPY --from=stage1       /home/ubuntu/extracted      /home/ubuntu/extracted/
