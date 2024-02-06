@@ -23,11 +23,21 @@ The Makefile provides several targets, each serving a specific purpose:
 
 - `build-rootfs` and `build-kernel`: These targets build root filesystem and kernel images, respectively. The `build-kernel` target depends on `initrd-builder`, which must be built first.
 
-- `docker-push`: This target pushes the built images to a Docker Hub registry. You can use this step to make the images accessible to other systems.
-
 - `generate-yaml`: This target generates a YAML file named `images.yaml`, which contains information about the built images. The YAML file includes details about the kernel and rootfs images for each version and distribution. This generated YAML file can be conveniently copied to the variables file of Ansible to keep the test environment up to date.
 
 - `build-all`: This target is a convenience target that sequentially builds both root filesystem and kernel images.
+
+By default, no images will be pushed. You need to set the `PUSH` variable to `true` to enable images push to remote registry.  
+Also, the default images tag will be `main` and the images name will be built as:
+```
+{{ repo }} /{{ distro }}-kernel:{{ kernelversion }}-{{ arch }}-{{ tag }}
+```
+for kernel images, or  
+```
+{{ repo }} /{{ distro }}-image:{{ kernelversion }}-{{ arch }}-{{ tag }}
+```
+for rootfs images.  
+Eg: `ghcr.io/falcosecurity/kernel-testing/amazonlinux2022-kernel:5.15-x86_64-main`.
 
 ## Usage
 
@@ -72,7 +82,13 @@ You can customize the Makefile to suit your specific requirements. The variables
 
 - `DRY_RUN`: Set this variable to `true` for a dry run, where the build commands will be printed but not executed.
 
-- `PUSH`: Set this variable to `true` when executing build to also push built image to remote registry.
+- `PUSH`: Set this variable to `true` to also push built images to remote registry. Disabled by default.
+
+- `LATEST`: Set this variable to `true` to also push built images as latest tag. Disabled by default.
+
+- `TAG`: Set this variable to the images tag name. Defaults to `main`.
+
+- `CLEANUP`: Set this variable to `true` to cleanup images right after they get built. This is useful to test images build in CI, where disk space might be limited.
 
 - `REPOSITORY`: The Docker repository where the built images will be tagged and pushed.
 
