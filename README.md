@@ -1,7 +1,7 @@
 [![Falco kernel tests Repository](https://github.com/falcosecurity/evolution/blob/main/repos/badges/falco-infra-blue.svg)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#infra-scope) 
 [![Incubating](https://img.shields.io/badge/status-incubating-orange?style=for-the-badge)](https://github.com/falcosecurity/evolution/blob/main/REPOSITORIES.md#incubating)
 ![Architectures](https://img.shields.io/badge/ARCHS-x86__64%7Caarch64-blueviolet?style=for-the-badge)
-
+[![Latest release](https://img.shields.io/github/v/release/falcosecurity/kernel-testing?style=for-the-badge)](https://github.com/falcosecurity/kernel-testing/releases/latest)
 
 # Falco drivers tests
 
