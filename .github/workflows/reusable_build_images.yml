@@ -52,6 +52,10 @@ jobs:
         run: |
           echo "TAG=${{ inputs.version }}" >> $GITHUB_ENV
 
+      - name: Set CLEANUP env var (CI only, because of limited disk space)
+        run: |
+          echo "CLEANUP=true" >> $GITHUB_ENV
+
       - name: Build images
         working-directory: ./images
         run: |
@@ -65,5 +69,3 @@ jobs:
             cat failed.txt
             exit 1;
           fi
-
-

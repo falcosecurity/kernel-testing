@@ -1,10 +1,11 @@
-DRY_RUN := false
-PUSH := false
-LATEST := false
+DRY_RUN ?= false
+PUSH ?= false
+LATEST ?= false
 TAG ?= main
-REPOSITORY := ghcr.io/falcosecurity/kernel-testing
+CLEANUP ?= false
+REPOSITORY ?= ghcr.io/falcosecurity/kernel-testing
 ARCH ?= $(shell uname -m)
-YAML_FILE := images.yaml
+YAML_FILE ?= images.yaml
 
 .PHONY: build-rootfs build-kernel generate-yaml build-all initrd-builder modernprobe-builder builder
 
@@ -12,7 +13,7 @@ builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
 		echo "Dry run: Building builder image: docker build -t $(REPOSITORY)/builder:$(ARCH)-$(TAG)"; \
 	else \
-		echo "Building modernprobe-builder image"; \
+		echo "Building builder image"; \
 		image=$(REPOSITORY)/builder:$(ARCH); \
 		docker build -t $$image-$(TAG) builder || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 		if [ "$(PUSH)" = "true" ]; then \
@@ -72,9 +73,12 @@ build-rootfs:
 					docker push $$image-latest; \
 				fi; \
 			fi; \
-			docker image rm -f $$image-$(TAG); \
-			docker image rm -f $$image-latest; \
-			docker builder prune -f -a; \
+			if [ "$(CLEANUP)" = "true" ]; then \
+				echo "Cleaning image: $$image-$(TAG)"; \
+				docker image rm -f $$image-$(TAG); \
+				docker image rm -f $$image-latest; \
+				docker system prune -f; \
+			fi; \
 		fi; \
 	done
 
@@ -97,9 +101,12 @@ build-kernel: initrd-builder
 					docker push $$image-latest; \
 				fi; \
 			fi; \
-			docker image rm -f $$image-$(TAG); \
-			docker image rm -f $$image-latest; \
-			docker builder prune -f -a; \
+			if [ "$(CLEANUP)" = "true" ]; then \
+				echo "Cleaning image: $$image-$(TAG)"; \
+				docker image rm -f $$image-$(TAG); \
+				docker image rm -f $$image-latest; \
+				docker system prune -f; \
+			fi; \
 		fi; \
 	done
 
