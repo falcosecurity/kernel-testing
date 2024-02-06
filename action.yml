@@ -1,0 +1,98 @@
+name: 'kernel-testing'
+description: 'Ansible playbooks to provision firecracker VMs and run Falco kernel tests.'
+
+inputs:
+  libsversion:
+    description: 'libs version to be tested, eg: master'
+    required: false
+    default: 'master'
+  libsrepo:
+    description: 'libs repo to be tested, eg: falcosecurity/libs'
+    required: false
+    default: 'falcosecurity/libs'
+  build_matrix:  
+    description: 'Whether to generate matrixes as matrix_$architecture artifact'
+    required: false
+    default: 'false'
+
+outputs:
+  ansible_output:
+    description: "Uploaded ansible output artifact name"
+    value: ${{ steps.upload.outputs.ansible }}
+  matrix_output:
+    description: "Uploaded matrix artifact name"
+    value: ${{ steps.upload.outputs.matrix }}  
+    
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      with:
+        repository: falcosecurity/kernel-testing
+        ref: ${{ env.ACTION_REF }}
+      env:
+        ACTION_REF: ${{ github.action_ref }}  
+        
+    - name: Store architecture variable
+      id: var
+      run: echo "architecture=$(uname -m)" >> $GITHUB_OUTPUT    
+        
+    - name: Generate vars yaml
+      working-directory: ./ansible-playbooks
+      run: |
+        cat > vars.yml <<EOF
+        run_id: "id-${{ github.run_id }}"
+        output_dir: "~/ansible_output_${{ github.run_id }}"
+        tag: "${ACTION_REF}"
+        repos:
+          libs: {name: "falcosecurity-libs", repo: "https://github.com/${{ inputs.libsrepo }}.git", version: "${{ inputs.libsversion }}"}
+        EOF
+      env:
+        ACTION_REF: ${{ github.action_ref }}    
+    
+    - name: Bootstrap VMs
+      working-directory: ./ansible-playbooks
+      run: |
+        ansible-playbook bootstrap.yml --extra-vars "@vars.yml"
+      
+    - name: Common setup
+      working-directory: ./ansible-playbooks
+      run: |
+        ansible-playbook common.yml --extra-vars "@vars.yml"
+
+    - name: Prepare github repos
+      working-directory: ./ansible-playbooks
+      run: |
+        ansible-playbook git-repos.yml --extra-vars "@vars.yml"
+     
+    - name: Run scap-open tests
+      working-directory: ./ansible-playbooks
+      run: |
+        ansible-playbook scap-open.yml --extra-vars "@vars.yml" || :
+          
+    - name: Tar output files
+      run: |
+        tar -cvf ansible_output.tar ~/ansible_output_${{ github.run_id }}
+    
+    - name: Build matrix_gen and generate matrix
+      if: inputs.build_matrix == 'true'
+      working-directory: ./matrix_gen
+      env:
+        GOPATH: /root/go
+        GOCACHE: /root/.cache/go-build
+      run: |
+        go build .
+        ./matrix_gen --root-folder ~/ansible_output_${{ github.run_id }} --output-file matrix.md
+        
+    - name: Set output
+      id: outputs
+      run: |
+        echo "ansible=${{ github.action_path }}/ansible_output.tar" >> $GITHUB_OUTPUT
+        echo "matrix=${{ github.action_path }}/matrix_gen/matrix.md" >> $GITHUB_OUTPUT    
+          
+    - name: Cleanup
+      if: always()
+      working-directory: ./ansible-playbooks
+      run: |
+        ansible-playbook clean-up.yml --extra-vars "@vars.yml" || :
