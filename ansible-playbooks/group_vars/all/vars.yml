@@ -41,6 +41,7 @@ machines:
   - {name: "oraclelinux-5.15", kernel: "{{ repo }}/oraclelinux-kernel:5.15-x86_64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:5.15-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "oraclelinux-5.4", kernel: "{{ repo }}/oraclelinux-kernel:5.4-x86_64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:5.4-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "ubuntu-4.15", kernel: "{{ repo }}/ubuntu-kernel:4.15-x86_64-{{ tag }}", rootfs: "{{ repo }}/ubuntu-image:4.15-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "ubuntu-5.8", kernel: "{{ repo }}/ubuntu-kernel:5.8-x86_64-{{ tag }}", rootfs: "{{ repo }}/ubuntu-image:5.8-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "ubuntu-6.5", kernel: "{{ repo }}/ubuntu-kernel:6.5-x86_64-{{ tag }}", rootfs: "{{ repo }}/ubuntu-image:6.5-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "amazonlinux2022-5.15", kernel: "{{ repo }}/amazonlinux2022-kernel:5.15-aarch64-{{ tag }}", rootfs: "{{ repo }}/amazonlinux2022-image:5.15-aarch64-{{ tag }}", arch: "aarch64"}  # noqa: yaml[line-length]
   - {name: "amazonlinux2-5.4", kernel: "{{ repo }}/amazonlinux2-kernel:5.4-aarch64-{{ tag }}", rootfs: "{{ repo }}/amazonlinux2-image:5.4-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
