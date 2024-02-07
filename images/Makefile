@@ -155,4 +155,4 @@ generate-yaml:
 		fi; \
 	done
 
-build-all: build-kernel build-rootfs
+build-all: build-kernel build-rootfs modernprobe-builder builder
