@@ -34,10 +34,6 @@ runs:
       env:
         ACTION_REF: ${{ github.action_ref }}  
         
-    - name: Store architecture variable
-      id: var
-      run: echo "architecture=$(uname -m)" >> $GITHUB_OUTPUT    
-        
     - name: Generate vars yaml
       working-directory: ./ansible-playbooks
       run: |
