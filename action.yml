@@ -18,10 +18,10 @@ inputs:
 outputs:
   ansible_output:
     description: "Uploaded ansible output artifact name"
-    value: ${{ steps.upload.outputs.ansible }}
+    value: ${{ steps.store-outputs.outputs.ansible }}
   matrix_output:
     description: "Uploaded matrix artifact name"
-    value: ${{ steps.upload.outputs.matrix }}  
+    value: ${{ steps.store-outputs.outputs.matrix }}  
     
 runs:
   using: "composite"
@@ -85,7 +85,7 @@ runs:
         ./matrix_gen --root-folder ~/ansible_output_${{ github.run_id }} --output-file matrix.md
         
     - name: Set output
-      id: outputs
+      id: store-outputs
       shell: bash
       run: |
         echo "ansible=${{ github.action_path }}/ansible_output.tar" >> $GITHUB_OUTPUT
