@@ -36,6 +36,7 @@ runs:
         
     - name: Generate vars yaml
       working-directory: ./ansible-playbooks
+      shell: bash
       run: |
         cat > vars.yml <<EOF
         run_id: "id-${{ github.run_id }}"
@@ -49,27 +50,27 @@ runs:
     
     - name: Bootstrap VMs
       working-directory: ./ansible-playbooks
-      run: |
-        ansible-playbook bootstrap.yml --extra-vars "@vars.yml"
+      shell: bash
+      run: ansible-playbook bootstrap.yml --extra-vars "@vars.yml"
       
     - name: Common setup
       working-directory: ./ansible-playbooks
-      run: |
-        ansible-playbook common.yml --extra-vars "@vars.yml"
+      shell: bash
+      run: ansible-playbook common.yml --extra-vars "@vars.yml"
 
     - name: Prepare github repos
       working-directory: ./ansible-playbooks
-      run: |
-        ansible-playbook git-repos.yml --extra-vars "@vars.yml"
+      shell: bash
+      run: ansible-playbook git-repos.yml --extra-vars "@vars.yml"
      
     - name: Run scap-open tests
       working-directory: ./ansible-playbooks
-      run: |
-        ansible-playbook scap-open.yml --extra-vars "@vars.yml" || :
+      shell: bash
+      run: ansible-playbook scap-open.yml --extra-vars "@vars.yml" || :
           
     - name: Tar output files
-      run: |
-        tar -cvf ansible_output.tar ~/ansible_output_${{ github.run_id }}
+      shell: bash
+      run: tar -cvf ansible_output.tar ~/ansible_output_${{ github.run_id }}
     
     - name: Build matrix_gen and generate matrix
       if: inputs.build_matrix == 'true'
@@ -77,12 +78,14 @@ runs:
       env:
         GOPATH: /root/go
         GOCACHE: /root/.cache/go-build
+      shell: bash  
       run: |
         go build .
         ./matrix_gen --root-folder ~/ansible_output_${{ github.run_id }} --output-file matrix.md
         
     - name: Set output
       id: outputs
+      shell: bash
       run: |
         echo "ansible=${{ github.action_path }}/ansible_output.tar" >> $GITHUB_OUTPUT
         echo "matrix=${{ github.action_path }}/matrix_gen/matrix.md" >> $GITHUB_OUTPUT    
@@ -90,5 +93,5 @@ runs:
     - name: Cleanup
       if: always()
       working-directory: ./ansible-playbooks
-      run: |
-        ansible-playbook clean-up.yml --extra-vars "@vars.yml" || :
+      shell: bash
+      run: ansible-playbook clean-up.yml --extra-vars "@vars.yml" || :
