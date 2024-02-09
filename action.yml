@@ -22,20 +22,12 @@ outputs:
   matrix_output:
     description: "Uploaded matrix artifact name"
     value: ${{ steps.store-outputs.outputs.matrix }}  
-    
+
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      with:
-        repository: falcosecurity/kernel-testing
-        ref: ${{ env.ACTION_REF }}
-      env:
-        ACTION_REF: ${{ github.action_ref }}  
-        
     - name: Generate vars yaml
-      working-directory: ./ansible-playbooks
+      working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: |
         cat > vars.yml <<EOF
@@ -49,33 +41,33 @@ runs:
         ACTION_REF: ${{ github.action_ref }}    
     
     - name: Bootstrap VMs
-      working-directory: ./ansible-playbooks
+      working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: ansible-playbook bootstrap.yml --extra-vars "@vars.yml"
       
     - name: Common setup
-      working-directory: ./ansible-playbooks
+      working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: ansible-playbook common.yml --extra-vars "@vars.yml"
 
     - name: Prepare github repos
-      working-directory: ./ansible-playbooks
+      working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: ansible-playbook git-repos.yml --extra-vars "@vars.yml"
      
     - name: Run scap-open tests
-      working-directory: ./ansible-playbooks
+      working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: |
         ansible-playbook scap-open.yml --extra-vars "@vars.yml" || : 
           
     - name: Tar output files
       shell: bash
-      run: tar -cvf ansible_output.tar ~/ansible_output_${{ github.run_id }}
+      run: tar -cvf $GITHUB_ACTION_PATH/ansible_output.tar ~/ansible_output_${{ github.run_id }}
     
     - name: Build matrix_gen and generate matrix
       if: inputs.build_matrix == 'true'
-      working-directory: ./matrix_gen
+      working-directory: ${{ github.action_path }}/matrix_gen
       env:
         GOPATH: /root/go
         GOCACHE: /root/.cache/go-build
@@ -93,7 +85,7 @@ runs:
           
     - name: Cleanup
       if: always()
-      working-directory: ./ansible-playbooks
+      working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: |
         ansible-playbook clean-up.yml --extra-vars "@vars.yml" || : 
