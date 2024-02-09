@@ -1,4 +1,4 @@
-FROM ubuntu:23.04
+FROM ubuntu:23.10
 
 ARG VERSION=6.5.0-17
 ARG URL='http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux/'
