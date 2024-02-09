@@ -26,6 +26,22 @@ outputs:
 runs:
   using: "composite"
   steps:
+    # If action_ref points to v0 or v0.3, expect to be on a tag,
+    # else expect that user passed either `main` or an hash.
+    - name: Fetch tag or hash to be used
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      id: git
+      run: |
+        if [[ "$ACTION_REF" =~ ^v[0-9] ]]; then
+            GIT_VER=$(git tag --points-at HEAD)
+        else
+            GIT_VER=$ACTION_REF
+        fi
+        echo "git_ver=$GIT_VER" >> $GITHUB_OUTPUT
+      env:
+        ACTION_REF: ${{ github.action_ref }}
+  
     - name: Generate vars yaml
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
@@ -33,13 +49,11 @@ runs:
         cat > vars.yml <<EOF
         run_id: "id-${{ github.run_id }}"
         output_dir: "~/ansible_output_${{ github.run_id }}"
-        tag: "${ACTION_REF}"
+        tag: "${{ steps.git.outputs.git_ver }}"
         repos:
           libs: {name: "falcosecurity-libs", repo: "https://github.com/${{ inputs.libsrepo }}.git", version: "${{ inputs.libsversion }}"}
         EOF
-      env:
-        ACTION_REF: ${{ github.action_ref }}    
-    
+
     - name: Bootstrap VMs
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
