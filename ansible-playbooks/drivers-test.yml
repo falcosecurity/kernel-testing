@@ -1,19 +1,21 @@
-# Playbook used to run scap-open-test role.
+# Playbook used to run drivers_test role.
 # Check the role for more information
 
 - name: Include build-skeleton playbook
   import_playbook: build-skeleton.yml
 - name: Include build-scap-open playbook
   import_playbook: build-scap-open.yml
+- name: Include build-drivers-test playbook
+  import_playbook: build-drivers-test.yml  
 
-- name: Play that runs probes tests using scap-open binary
+- name: Play that runs probes tests using drivers_test binary
   hosts: "machines"
   gather_facts: true
   remote_user: "{{ user }}"
   become: true
   serial: 30
   roles:
-    - scap_open
+    - drivers_test
 
 - name: Remove artifacts from localhost
   hosts: localhost
@@ -21,8 +23,9 @@
   tasks:
     - name: Remove artifacs
       ansible.builtin.file:
-        path: "./roles/scap_open/files/"
+        path: "./roles/drivers_test/files/"
         state: absent
       with_items:
+        - "/tmp/drivers_test"
         - "/tmp/scap-open"
         - "/tmp/bpf_probe.skel.h"
