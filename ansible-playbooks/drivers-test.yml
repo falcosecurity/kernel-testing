@@ -5,10 +5,25 @@
   import_playbook: build-skeleton.yml
 - name: Include build-scap-open playbook
   import_playbook: build-scap-open.yml
-- name: Include build-drivers-test playbook
-  import_playbook: build-drivers-test.yml  
 
-- name: Play that runs probes tests using drivers_test binary
+# We need this since every VM is going to build its own drivers_test binary,
+# because drivers_test is very tied to the kernel we are running on
+# and must be built on each VM.
+# To eventually (where supported) build drivers_test with modern_bpf support enabled,
+# we need to pass the modern probe skeleton to each VM.
+- name: Play that distributes modern bpf skeleton to VMs
+  hosts: "machines"
+  remote_user: "{{ user }}"
+  gather_facts: false
+  tasks:
+    - name: Copy bpf_probe.skel.h to all VMs
+      ansible.builtin.copy:
+        src: "/tmp/bpf_probe.skel.h"
+        dest: "/tmp"
+        mode: '0755'
+      become: false
+
+- name: Play that builds and runs drivers tests using drivers_test binary
   hosts: "machines"
   gather_facts: true
   remote_user: "{{ user }}"
@@ -26,6 +41,5 @@
         path: "./roles/drivers_test/files/"
         state: absent
       with_items:
-        - "/tmp/drivers_test"
         - "/tmp/scap-open"
         - "/tmp/bpf_probe.skel.h"

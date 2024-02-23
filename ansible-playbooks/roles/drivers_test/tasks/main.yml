@@ -48,10 +48,14 @@
         cmd: >
              cmake
              -DUSE_BUNDLED_DEPS=ON
-             -DBUILD_LIBSCAP_MODERN_BPF=OFF
+             -DBUILD_LIBSCAP_MODERN_BPF={{ modern_bpf_supported }}
+             -DMODERN_BPF_SKEL_DIR=/tmp
              -DBUILD_LIBSCAP_GVISOR=OFF
              -DBUILD_BPF={{ bpf_supported }}
-             -DCREATE_TEST_TARGETS=OFF
+             -DENABLE_DRIVERS_TESTS=On
+             -DCREATE_TEST_TARGETS=On
+             -DENABLE_IA32_TESTS=Off
+             -DSCAP_FILES_SUITE_ENABLE=Off
              ..
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       changed_when: false
@@ -65,6 +69,27 @@
       ansible.builtin.copy:
         content: "{{ cmake_result | to_nice_json }}"
         dest: "{{ output_dest_dir }}/cmake-configure.json"
+        mode: '0755'
+      delegate_to: localhost
+      become: false
+
+- name: Build drivers_test binary
+  block:
+    - name: Build drivers_test
+      ansible.builtin.command:
+        cmd: make drivers_test -j {{ cpus }}
+        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
+      register: dt_result
+      changed_when: false
+  rescue:
+    - name: Print error message to stdout --- drivers_test
+      ansible.builtin.debug:
+        var: dt_result
+  always:
+    - name: Dump error message to file
+      ansible.builtin.copy:
+        content: "{{ dt_result | to_nice_json }}"
+        dest: "{{ output_dest_dir }}/drivers_test_build.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -108,14 +133,7 @@
   block:
     - name: Run drivers_test with kernel module
       ansible.builtin.command:
-        cmd: /tmp/drivers_test -k
-        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: result
-      changed_when: false
-
-    - name: Unload the kernel module
-      ansible.builtin.command:
-        cmd: rmmod driver/scap.ko
+        cmd: ./test/drivers/drivers_test -k
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
       changed_when: false
@@ -158,7 +176,7 @@
   block:
     - name: Run drivers_test with bpf probe
       ansible.builtin.command:
-        cmd: /tmp/drivers_test -b driver/bpf/probe.o
+        cmd: ./test/drivers/drivers_test -b driver/bpf/probe.o
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
       when: bpf_supported
@@ -180,7 +198,7 @@
   block:
     - name: Run drivers_test with modern-probe
       ansible.builtin.command:
-        cmd: /tmp/drivers_test -m
+        cmd: ./test/drivers/drivers_test -m
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
       when: modern_bpf_supported
