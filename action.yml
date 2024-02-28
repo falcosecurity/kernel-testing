@@ -14,6 +14,10 @@ inputs:
     description: 'Whether to generate matrixes as matrix_$architecture artifact'
     required: false
     default: 'false'
+  testexe:
+    description: 'Test executable to be run. One of scap-open or drivers-test'
+    required: false
+    default: 'scap-open'
 
 outputs:
   ansible_output:
@@ -59,7 +63,7 @@ runs:
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: |
-        ansible-playbook scap-open.yml --extra-vars "@vars.yml" || : 
+        ansible-playbook ${{ inputs.testexe }}.yml --extra-vars "@vars.yml" || : 
           
     - name: Tar output files
       shell: bash
