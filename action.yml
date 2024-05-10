@@ -11,7 +11,7 @@ inputs:
     required: false
     default: 'falcosecurity/libs'
   build_matrix:  
-    description: 'Whether to generate matrixes as matrix_$architecture artifact'
+    description: 'Whether to generate matrixes as matrix artifact'
     required: false
     default: 'false'
 
