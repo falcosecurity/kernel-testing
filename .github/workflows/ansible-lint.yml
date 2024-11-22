@@ -8,11 +8,12 @@ jobs:
     name: Ansible Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Run ansible-lint
-        uses: ansible/ansible-lint-action@v6.3.0 # the latest version has a bug that does not run in online mode
+        uses: ansible/ansible-lint@44be233dbd6a8a6d8f3c5297c318ed4ed4644c32 # v24.10.0
         with:
-          path: "ansible-playbooks/" 
+          working_directory: "${{ github.workspace }}/ansible-playbooks"
+          requirements_file: "${{ github.workspace }}/requirements.yml"
