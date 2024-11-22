@@ -1,0 +1,1 @@
+roles/scap_open/vars/main.yml var-naming # disable var-naming for scap-open.yml playbook
