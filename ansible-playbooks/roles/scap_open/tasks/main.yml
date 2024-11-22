@@ -24,15 +24,15 @@
   rescue:
     - name: Disable Modern Bpf support
       ansible.builtin.set_fact:
-        modern_bpf_supported: false
+        scap_open_modern_bpf_supported: false
       when: result.rc == 95
 
 - name: Check Old Bpf Support
   block:
     - name: Enable old Bpf support
       ansible.builtin.set_fact:
-        bpf_supported: true
-      when: ansible_kernel is version(bpf_minimum_kver[ansible_architecture],'>=')
+        scap_open_bpf_supported: true
+      when: ansible_kernel is version(scap_open_bpf_minimum_kver[ansible_architecture],'>=')
 
 - name: Prepare the build directory
   block:
@@ -50,7 +50,7 @@
              -DUSE_BUNDLED_DEPS=ON
              -DBUILD_LIBSCAP_MODERN_BPF=OFF
              -DBUILD_LIBSCAP_GVISOR=OFF
-             -DBUILD_BPF={{ bpf_supported }}
+             -DBUILD_BPF={{ scap_open_bpf_supported }}
              -DCREATE_TEST_TARGETS=OFF
              ..
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
@@ -139,7 +139,7 @@
         cmd: make bpf -j {{ cpus }}
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: bpf_probe_result
-      when: bpf_supported
+      when: scap_open_bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- build bpf probe
@@ -161,7 +161,7 @@
         cmd: /tmp/scap-open --num_events 50 --bpf driver/bpf/probe.o
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
-      when: bpf_supported
+      when: scap_open_bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- scap-open + bpf probe
@@ -183,7 +183,7 @@
         cmd: /tmp/scap-open --num_events 50 --modern_bpf
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       register: result
-      when: modern_bpf_supported
+      when: scap_open_modern_bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- scap-open + modern probe
