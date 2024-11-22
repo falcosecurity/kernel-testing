@@ -1,6 +1,6 @@
 ---
-modern_bpf_supported: true
-bpf_supported: false
-bpf_minimum_kver:
+scap_open_modern_bpf_supported: true
+scap_open_bpf_supported: false
+scap_open_bpf_minimum_kver:
   aarch64: '4.17'
   x86_64: '4.14'
