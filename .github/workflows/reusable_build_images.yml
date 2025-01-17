@@ -25,7 +25,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: [amd64, arm64]
-    runs-on: ${{ (matrix.arch == 'arm64' && 'oracle-aarch64-4cpu-16gb') || 'ubuntu-22.04' }}
+    runs-on: ${{ (matrix.arch == 'arm64' && 'ubuntu-22.04-arm') || 'ubuntu-22.04' }}
     steps:  
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
