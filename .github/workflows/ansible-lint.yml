@@ -13,7 +13,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@e918e02374cc9148abfe6d0fa04417ee89f0def9 # v25.1.0
+        uses: ansible/ansible-lint@395b674bbc78bc4d9da641c38a7e959b4993d9a4 # v25.1.1
         with:
           working_directory: "${{ github.workspace }}/ansible-playbooks"
           requirements_file: "${{ github.workspace }}/requirements.yml"
