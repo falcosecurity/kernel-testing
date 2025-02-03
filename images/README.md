@@ -27,6 +27,8 @@ The Makefile provides several targets, each serving a specific purpose:
 
 - `build-all`: This target is a convenience target that sequentially builds both root filesystem and kernel images.
 
+- `<arch>/<distro>/<kernelversion>`: This target builds both the root filesystem and kernel images for the given architecture, distribution and kernel version.
+
 By default, no images will be pushed. You need to set the `PUSH` variable to `true` to enable images push to remote registry.  
 Also, the default images tag will be `main` and the images name will be built as:
 ```
