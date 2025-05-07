@@ -1,0 +1,45 @@
+# Playbook used to run drivers_test role.
+# Check the role for more information
+
+- name: Include build-skeleton playbook
+  import_playbook: build-skeleton.yml
+- name: Include build-scap-open playbook
+  import_playbook: build-scap-open.yml
+
+# We need this since every VM is going to build its own drivers_test binary,
+# because drivers_test is very tied to the kernel we are running on
+# and must be built on each VM.
+# To eventually (where supported) build drivers_test with modern_bpf support enabled,
+# we need to pass the modern probe skeleton to each VM.
+- name: Play that distributes modern bpf skeleton to VMs
+  hosts: "machines"
+  remote_user: "{{ user }}"
+  gather_facts: false
+  tasks:
+    - name: Copy bpf_probe.skel.h to all VMs
+      ansible.builtin.copy:
+        src: "/tmp/bpf_probe.skel.h"
+        dest: "/tmp"
+        mode: '0755'
+      become: false
+
+- name: Play that builds and runs drivers tests using drivers_test binary
+  hosts: "machines"
+  gather_facts: true
+  remote_user: "{{ user }}"
+  become: true
+  serial: 30
+  roles:
+    - drivers_test
+
+- name: Remove artifacts from localhost
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Remove artifacs
+      ansible.builtin.file:
+        path: "./roles/drivers_test/files/"
+        state: absent
+      with_items:
+        - "/tmp/scap-open"
+        - "/tmp/bpf_probe.skel.h"
