@@ -6,5 +6,5 @@
   tasks:
     - name: Fix the dns issues
       ansible.builtin.shell: |
-        unlink /etc/resolv.conf && echo 'nameserver 1.1.1.1' > /etc/resolv.conf
+        echo 'nameserver 1.1.1.1' > /etc/resolv.conf
       changed_when: false
