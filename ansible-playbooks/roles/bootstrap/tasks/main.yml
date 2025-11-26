@@ -23,7 +23,7 @@
     state: directory
     mode: '0755'
 
-- name: Template the ignite-vm.yaml configuratin file for machines
+- name: Template the ignite-vm.yaml configuration file for machines
   ansible.builtin.template:
     src: ignite-vm.yaml.j2
     dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
@@ -33,7 +33,7 @@
   when: item.arch == ansible_facts["architecture"]
   delegate_to: localhost
 
-- name: Template the ignite-vm.yaml configuratin file for builders
+- name: Template the ignite-vm.yaml configuration file for builders
   ansible.builtin.template:
     src: ignite-vm.yaml.j2
     dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
@@ -103,7 +103,7 @@
   when: item.arch == ansible_facts["architecture"]
   become: true
 
-- name: Template the inventory.ini.j2 configuration file to invetory.ini
+- name: Template the inventory.ini.j2 configuration file to inventory.ini
   ansible.builtin.template:
     src: inventory.ini.j2
     dest: inventory.ini
