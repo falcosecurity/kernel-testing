@@ -118,6 +118,61 @@
     mv "$TMP_DIR/vmlinux" "{{ shared_files_path }}/{{ kernel_basename }}.vmlinux"
     mv "$TMP_DIR/initrd"  "{{ shared_files_path }}/{{ kernel_basename }}.initrd"
 
+- name: Create raw disk images containing ext4 filesystem from rootfs OCI images # noqa: risky-shell-pipe
+  vars:
+    rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
+    disk_image: "{{ shared_files_path }}/{{ rootfs_basename }}.ext4"
+  args:
+    creates: "{{ disk_image }}"
+  loop: "{{ machines | union(builders) }}"
+  when: item.arch == ansible_facts['architecture']
+  become: true
+  ansible.builtin.shell: |
+    # Enable Bash safety only if running under Bash.
+    [ -n "$BASH_VERSION" ] && eval "set -eo pipefail"
+    
+    CID=""
+    TMP_DIR=""
+    LOOPDEV=""
+    
+    cleanup() {
+      EXIT_STATUS=$?
+      [ "$EXIT_STATUS" -ne 0 ] && rm -rf "{{ disk_image }}" || :
+      [ -n "$CID" ] && docker rm "$CID" >/dev/null 2>&1 || :
+      [ -n "$LOOPDEV" ] && losetup -d "$LOOPDEV" >/dev/null 2>&1 || :
+      if [ -n "$TMP_DIR" ]; then
+        mountpoint -q "$TMP_DIR" && umount "$TMP_DIR" || :
+        rm -rf "$TMP_DIR" || :
+      fi
+    }
+    
+    # Trigger cleanup at exit.
+    trap cleanup EXIT
+    
+    # Create an initial empty disk image.
+    truncate -s 5G "{{ disk_image }}"
+    mkfs.ext4 -F "{{ disk_image }}"
+    
+    # Create container.
+    CID=$(docker create "{{ item.rootfs }}" /bin/sh) || exit 1
+    
+    # Create a temporary directory.
+    TMP_DIR=$(mktemp -d) || exit 1
+    
+    # Attach loop device explicitly
+    LOOPDEV=$(losetup -f --show "{{ disk_image }}")
+
+    # Mount disk on a loop device and copy the image content into the disk.
+    mount -o loop "{{ disk_image }}" "$TMP_DIR"
+    docker export "$CID" | tar -C "$TMP_DIR" -xf -
+    
+    # Finalize and check disk integrity.
+    sync
+    umount "$TMP_DIR"
+    losetup -d "$LOOPDEV"
+    LOOPDEV=""
+    e2fsck -fy "{{ disk_image }}"
+
 - name: Create virtual machines run_id={{ run_id }}
   ansible.builtin.command:
     cmd: ignite run --config "{{ run_files_path }}/{{ item.name }}.yaml" --runtime docker
