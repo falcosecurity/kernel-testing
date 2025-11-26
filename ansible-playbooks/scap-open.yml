@@ -28,7 +28,7 @@
 
     - name: Build skeleton
       ansible.builtin.command:
-        cmd: make ProbeSkeleton -j {{ cpus }}
+        cmd: cmake --build . --target ProbeSkeleton --parallel {{ cpus }}
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/skeleton-build"
       changed_when: false
       register: cmake_result
@@ -76,7 +76,7 @@
 
     - name: Build scap-open with modern probe
       ansible.builtin.shell:
-        cmd: source /opt/rh/devtoolset-9/enable && make scap-open -j {{ cpus }}
+        cmd: source /opt/rh/devtoolset-9/enable && cmake --build . --target scap-open --parallel {{ cpus }}
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       changed_when: false
       register: cmake_result
