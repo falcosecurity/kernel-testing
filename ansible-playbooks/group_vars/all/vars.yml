@@ -51,10 +51,10 @@ machines:
   - {name: "ubuntu-6.5", kernel: "{{ repo }}/ubuntu-kernel:6.5-aarch64-{{ tag }}", rootfs: "{{ repo }}/ubuntu-image:6.5-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
 
 builders:
-  - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "{{ repo }}/builder:x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "{{ repo }}/modernprobe-builder:x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
-  - {name: "centos-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "{{ repo }}/builder:aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
-  - {name: "fedora-builder", kernel: "weaveworks/ignite-kernel:5.14.16", rootfs: "{{ repo }}/modernprobe-builder:aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "centos-builder", kernel: "{{ repo }}/ubuntu-kernel:6.5-x86_64-{{ tag }}", rootfs: "{{ repo }}/builder:x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "fedora-builder", kernel: "{{ repo }}/fedora-kernel:6.2-x86_64-{{ tag }}", rootfs: "{{ repo }}/modernprobe-builder:x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "centos-builder", kernel: "{{ repo }}/ubuntu-kernel:6.5-aarch64-{{ tag }}", rootfs: "{{ repo }}/builder:aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "fedora-builder", kernel: "{{ repo }}/fedora-kernel:6.2-aarch64-{{ tag }}", rootfs: "{{ repo }}/modernprobe-builder:aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
 
 output_dir: "~/ansible_output"
 # Number of cpus.
