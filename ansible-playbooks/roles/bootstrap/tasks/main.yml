@@ -15,7 +15,7 @@
 
 - name: Checking if ssh key exists and if not generate a new one
   community.crypto.openssh_keypair:
-    path: "{{ ssh_key_path }}/{{ ssh_key_name }}"
+    path: "{{ prv_key_path }}"
 
 - name: Create the files directory in bootstrap role
   ansible.builtin.file:
