@@ -75,6 +75,49 @@
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts["architecture"]
 
+- name: Extract vmlinux and initrd from kernel OCI images # noqa: risky-shell-pipe
+  vars:
+    kernel_basename: "{{ item.kernel | basename | regex_replace(':', '.') }}"
+  args:
+    creates: "{{ shared_files_path }}/{{ kernel_basename }}.initrd"
+  loop: "{{ machines | union(builders) }}"
+  when: item.arch == ansible_facts['architecture']
+  become: true
+  ansible.builtin.shell: |
+    # Enable Bash safety only if running under Bash
+    [ -n "$BASH_VERSION" ] && eval "set -eo pipefail"
+
+    CID=""
+    TMP_DIR=""
+
+    cleanup() {
+      [ -n "$CID" ] && docker rm "$CID" >/dev/null 2>&1 || :
+      [ -n "$TMP_DIR" ] && rm -rf "$TMP_DIR" || :
+    }
+
+    # Trigger cleanup at exit.
+    trap cleanup EXIT
+
+    # Create container.
+    CID=$(docker create "{{ item.kernel }}" /bin/sh) || exit 1
+
+    # Create a temporary directory.
+    TMP_DIR=$(mktemp -d) || exit 1
+
+    # Export and extract vmlinux and initrd while preserving permissions.
+    # note: --same-owner and --preserve-permissions requires this task to be run as root.
+    docker export "$CID" | tar -x \
+      --same-owner \
+      --preserve-permissions \
+      -C "$TMP_DIR" \
+      --strip-components=1 \
+      boot/vmlinux \
+      boot/initrd
+
+    # Move extracted vmlinux and initrd to destination.
+    mv "$TMP_DIR/vmlinux" "{{ shared_files_path }}/{{ kernel_basename }}.vmlinux"
+    mv "$TMP_DIR/initrd"  "{{ shared_files_path }}/{{ kernel_basename }}.initrd"
+
 - name: Create virtual machines run_id={{ run_id }}
   ansible.builtin.command:
     cmd: ignite run --config "{{ run_files_path }}/{{ item.name }}.yaml" --runtime docker
