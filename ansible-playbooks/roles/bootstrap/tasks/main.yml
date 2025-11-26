@@ -173,6 +173,47 @@
     LOOPDEV=""
     e2fsck -fy "{{ disk_image }}"
 
+- name: Clone raw disk images for the current run run_id={{ run_id }}
+  vars:
+    rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
+    original_image: "{{ shared_files_path }}/{{ rootfs_basename }}.ext4"
+    working_image: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
+  # Create a lightweight CoW clone (if fs supports reflinks) and preserve raw disk sparseness.
+  ansible.builtin.command: >
+    cp --sparse=always --reflink=auto "{{ original_image }}" "{{ working_image }}"
+  args:
+    creates: "{{ working_image }}"
+  loop: "{{ machines | union(builders) }}"
+  when: item.arch == ansible_facts['architecture']
+  delegate_to: localhost
+  become: true
+
+- name: Setup ssh inside rootfs ext4 image clones
+  vars:
+    rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
+    disk_image: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
+  become: true
+  block:
+    - name: Ensure filesystem is clean before modifying rootfs ext4 image clones
+      ansible.builtin.command: e2fsck -fy "{{ disk_image }}"
+      changed_when: false
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts['architecture']
+
+    - name: Ensure /root/.ssh exists inside rootfs ext4 image clones
+      ansible.builtin.shell: |
+        e2mkdir -P 700 "{{ disk_image }}:/root/.ssh" || :
+      changed_when: false
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts['architecture']
+
+    - name: Copy public key inside rootfs ext4 image clones
+      ansible.builtin.shell: |
+        e2cp -P 600 "{{ pub_key_path }}" "{{ disk_image }}":/root/.ssh/authorized_keys
+      changed_when: false
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts['architecture']
+
 - name: Create virtual machines run_id={{ run_id }}
   ansible.builtin.command:
     cmd: ignite run --config "{{ run_files_path }}/{{ item.name }}.yaml" --runtime docker
