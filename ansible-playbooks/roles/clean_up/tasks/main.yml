@@ -77,3 +77,15 @@
   ansible.builtin.file:
     path: "{{ output_dir }}"
     state: absent
+
+- import_role:
+    name: common
+    tasks_from: compute_tap_dev_map
+
+- name: Remove tap interfaces
+  ansible.builtin.command: ip link del "{{ item.name }}"
+  loop: "{{ tap_dev_map.values() }}"
+  failed_when: false
+  changed_when: false
+  delegate_to: localhost
+  become: true
