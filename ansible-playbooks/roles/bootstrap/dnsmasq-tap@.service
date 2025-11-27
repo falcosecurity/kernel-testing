@@ -1,0 +1,13 @@
+[Unit]
+Description=Per-tap dnsmasq instance for %i (expected instance format: DEV:HOST_IP:GUEST_IP)
+After=network.target
+Requires=network.target
+
+[Service]
+Type=exec
+Environment="ARGS=%i"
+ExecStart=/bin/bash -c 'IFS=: read DEV HOST_IP GUEST_IP <<< $ARGS; exec /usr/sbin/dnsmasq --keep-in-foreground --interface=$DEV --bind-dynamic --port=0 --dhcp-range=$GUEST_IP,$GUEST_IP,255.255.255.252,1h --dhcp-option=3,$HOST_IP --dhcp-option=6,1.1.1.1 --dhcp-leasefile=/run/dnsmasq-tap-$DEV.leases'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
