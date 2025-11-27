@@ -1,0 +1,26 @@
+{
+  "boot-source": {
+    "kernel_image_path": "{{ vmlinux_path }}",
+    "initrd_path": "{{ initrd_path }}",
+    "boot_args": "rw console=ttyS0"
+  },
+  "drives": [
+    {
+      "drive_id": "rootfs",
+      "path_on_host": "{{ rootfs_disk_path }}",
+      "is_root_device": true,
+      "is_read_only": false
+    }
+  ],
+  "machine-config": {
+    "vcpu_count": {{ cpus }},
+    "mem_size_mib": {{ memory }},
+    "smt": false
+  },
+  "network-interfaces": [
+    {
+      "iface_id": "eth0",
+      "host_dev_name": "{{ tap_dev_name }}"
+    }
+  ]
+}
