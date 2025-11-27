@@ -5,63 +5,38 @@
 # We search all the machines created for this run_id.
 # We make sure that all machines are stopped and then delete them.
 - name: Stop running machines and delete them
+  delegate_to: localhost
   become: true
   block:
-    - name: Get name of running machines run_id={{ run_id }}
-      ansible.builtin.command:
-        cmd: ignite ps --all -f \{\{.Labels.run\}\}={{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Name\}\}
-      register: vms
-      changed_when: false
-
     - name: Stop running machines run_id={{ run_id }}
-      ansible.builtin.command:
-        cmd: ignite kill {{ item }}
-      loop: "{{ vms.stdout_lines }}"
-      changed_when: false
+      vars:
+        vm_socket: "{{ runtime_root }}/{{ run_id }}/{{ item.name }}.socket"
+      ansible.builtin.shell: |
+        curl --silent --show-error \
+          --unix-socket "{{ vm_socket }}" \
+          -X PUT http://localhost/actions \
+          -H 'Content-Type: application/json' \
+          -d '{"action_type":"SendCtrlAltDel"}'
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts["architecture"]
+      changed_when: true
+      failed_when: false
 
-    - name: Get name of stopped machines run_id={{ run_id }}
-      ansible.builtin.command:
-        cmd: ignite ps --all -f \{\{.Labels.run\}\}={{ run_id }} -t \{\{.Name\}\}
-      register: vms
+    - name: Wait for all machines to stop run_id={{ run_id }}
+      ansible.builtin.command: pgrep -f "firecracker.*--id .*{{ run_id }}"
+      register: pgrep_result
+      failed_when: false
       changed_when: false
+      until: pgrep_result.rc != 0
+      retries: 25
+      delay: 0.2
 
-    - name: Delete machines run_id={{ run_id }}
-      ansible.builtin.command:
-        cmd: ignite rm {{ item }}
-      loop: "{{ vms.stdout_lines }}"
-      changed_when: false
-
-# Ignite imports the images from the OCI ones and caches them.
-# If the images change in the remote repository, ignite continues to use
-# the cached ones. During the clean phase, we make sure to remove them from
-# the cache.
-- name: Remove rootfs and kernel images from ignite cache
-  become: true
-  ignore_errors: true  # noqa: ignore-errors
-  block:
-    - name: List cached images
-      ansible.builtin.command:
-        cmd: ignite images ls -q
-      register: images
-      changed_when: false
-
-    - name: Remove cached images from ignite
-      ansible.builtin.command:
-        cmd: ignite image rm {{ item }}
-      loop: "{{ images.stdout_lines }}"
-      changed_when: false
-
-    - name: List cached kernels
-      ansible.builtin.command:
-        cmd: ignite kernel ls -q
-      register: kernels
-      changed_when: false
-
-    - name: Remove cached kernels from ignite
-      ansible.builtin.command:
-        cmd: ignite kernel rm {{ item }}
-      loop: "{{ kernels.stdout_lines }}"
-      changed_when: false
+    - name: Force-kill remaining machines run_id={{ run_id }}
+      ansible.builtin.command: pkill -KILL -f "firecracker.*--id .*{{ run_id }}"
+      register: pkill_result
+      failed_when: false
+      changed_when: pkill_result.rc == 0
+      when: pgrep_result.rc == 0
 
 - name: Remove the run files directory
   ansible.builtin.file:

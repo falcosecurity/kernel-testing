@@ -63,26 +63,6 @@
   when: item.arch == ansible_facts["architecture"]
   delegate_to: localhost
 
-- name: Template the ignite-vm.yaml configuration file for machines
-  ansible.builtin.template:
-    src: ignite-vm.yaml.j2
-    dest: "{{ run_files_path }}/{{ item.name }}.yaml"
-    mode: '0755'
-  loop:
-    "{{ machines }}"
-  when: item.arch == ansible_facts["architecture"]
-  delegate_to: localhost
-
-- name: Template the ignite-vm.yaml configuration file for builders
-  ansible.builtin.template:
-    src: ignite-vm.yaml.j2
-    dest: "{{ run_files_path }}/{{ item.name }}.yaml"
-    mode: '0755'
-  loop:
-    "{{ builders }}"
-  when: item.arch == ansible_facts["architecture"]
-  delegate_to: localhost
-
 - name: Pull kernel and rootfs OCI images
   block:
     - name: Pull kernel OCI images
@@ -301,45 +281,24 @@
       when: item.arch == ansible_facts['architecture']
 
 - name: Create virtual machines run_id={{ run_id }}
-  ansible.builtin.command:
-    cmd: ignite run --config "{{ run_files_path }}/{{ item.name }}.yaml" --runtime docker
-  register: ignite_run
-  changed_when: ignite_run.rc == 0
+  vars:
+    vm_name: "{{ item.name | regex_replace('[.]', '-') }}-{{ run_id }}"
+    vm_config_path: "{{ run_files_path }}/{{ item.name }}.json"
+    vm_socket_path: "{{ run_files_path }}/{{ item.name }}.socket"
+    vm_logs_path: "{{ run_files_path }}/{{ item.name }}.log"
+  ansible.builtin.shell: >
+    RUST_LOG=debug nohup firecracker \
+      --no-seccomp \
+      --id "{{ vm_name }}" \
+      --config-file "{{ vm_config_path }}" \
+      --api-sock "{{ vm_socket_path }}" \
+      > "{{ vm_logs_path }}" 2>&1 < /dev/null &
+  args:
+    executable: /bin/bash
+  changed_when: true
   loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts["architecture"]
-  become: true
-
-- name: Wait for the VMs to be running run_id={{ run_id }} # noqa: risky-shell-pipe
-  ansible.builtin.shell: |
-    if test -v BASH; then set -o pipefail; fi
-    ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }}-{{ run_id }},\{\{.Status.Running\}\}=true | wc -l
-  register: result
-  until: result.stdout | int == 2
-  retries: 5
-  delay: 10
-  loop: "{{ machines | union(builders) }}"
-  when: item.arch == ansible_facts["architecture"]
-  changed_when: result.stdout | int == 2
-  become: true
-
-- name: Get IP of the VMs(machines) and register them in a variable run_id={{ run_id }}
-  ansible.builtin.command:
-    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }}-{{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Status.Network.IPAddresses\}\}
-  register: machine_ips
-  failed_when: machine_ips.stdout_lines | length != 1
-  changed_when: machine_ips.stdout_lines | length == 1
-  loop: "{{ machines }}"
-  when: item.arch == ansible_facts["architecture"]
-  become: true
-
-- name: Get IP of the VMs(builders) and register them in a variable run_id={{ run_id }}
-  ansible.builtin.command:
-    cmd: ignite ps -f \{\{.ObjectMeta.Name\}\}={{ item.name }}-{{ run_id }},\{\{.Status.Running\}\}=true -t \{\{.Status.Network.IPAddresses\}\}
-  register: builders_ips
-  failed_when: builders_ips.stdout_lines | length != 1
-  changed_when: builders_ips.stdout_lines | length == 1
-  loop: "{{ builders }}"
-  when: item.arch == ansible_facts["architecture"]
+  delegate_to: localhost
   become: true
 
 - name: Template the inventory.ini.j2 configuration file to inventory.ini
