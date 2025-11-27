@@ -255,6 +255,35 @@
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts["architecture"]
 
+- name: Start dnsmasq services
+  delegate_to: localhost
+  become: true
+  block:
+    - name: Install dnsmasq-tap@.service
+      ansible.builtin.copy:
+        src: dnsmasq-tap@.service
+        dest: /etc/systemd/system/dnsmasq-tap@.service
+        owner: root
+        group: root
+        mode: "0644"
+      register: unit_file
+
+    - name: Reload systemd units
+      ansible.builtin.systemd:
+        daemon_reload: true
+      when: unit_file.changed
+
+    - name: Start dnsmasq service on each tap device
+      vars:
+        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+        host_ip: "{{ tap_dev_map[item.name].host_ip }}"
+        guest_ip: "{{ tap_dev_map[item.name].guest_ip }}"
+      ansible.builtin.systemd:
+        name: "dnsmasq-tap@{{ tap_dev_name }}:{{ host_ip }}:{{ guest_ip }}"
+        state: started
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts['architecture']
+
 - name: Create virtual machines run_id={{ run_id }}
   ansible.builtin.command:
     cmd: ignite run --config "{{ run_files_path }}/{{ item.name }}.yaml" --runtime docker

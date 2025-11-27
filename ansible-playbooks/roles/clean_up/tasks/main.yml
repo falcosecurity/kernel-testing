@@ -82,6 +82,22 @@
     name: common
     tasks_from: compute_tap_dev_map
 
+- name: Stop all running dnsmasq-tap systemd services
+  delegate_to: localhost
+  become: true
+  block:
+    - name: Stop dnsmasq-tap systemd services
+      ansible.builtin.systemd:
+        name: "dnsmasq-tap@{{ item.name }}:{{ item.host_ip }}:{{ item.guest_ip }}"
+        state: stopped
+      loop: "{{ tap_dev_map.values() }}"
+
+    - name: Remove all dnsmasq-tap DHCP lease files
+      ansible.builtin.file:
+        path: "/run/dnsmasq-tap-{{ item.name }}.leases"
+        state: absent
+      loop: "{{ tap_dev_map.values() }}"
+
 - name: Remove tap interfaces
   ansible.builtin.command: ip link del "{{ item.name }}"
   loop: "{{ tap_dev_map.values() }}"
