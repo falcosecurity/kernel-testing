@@ -214,6 +214,47 @@
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts['architecture']
 
+- import_role:
+    name: common
+    tasks_from: compute_tap_dev_map
+
+- name: Verify any conflict in tap device map
+  delegate_to: localhost
+  ansible.builtin.command: >
+    ./roles/bootstrap/check_net_conflicts.sh {{ tap_dev_map | to_json | quote }}
+  changed_when: false
+
+- name: Create and configure tap devices for VMs
+  delegate_to: localhost
+  become: true
+  block:
+    - name: Create tap devices
+      vars:
+        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+      ansible.builtin.command: ip tuntap add dev "{{ tap_dev_name }}" mode tap
+      args:
+        creates: "/sys/class/net/{{ tap_dev_name }}/ifindex"
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts["architecture"]
+
+    - name: Set tap devices up
+      vars:
+        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+      ansible.builtin.command: ip link set "{{ tap_dev_name }}" up
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts["architecture"]
+      changed_when: false
+
+    - name: Set IP addresses on tap devices
+      vars:
+        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+        ip_addr: "{{ tap_dev_map[item.name].host_ip }}/30"
+      ansible.builtin.shell: |
+        ip -o addr show dev "{{ tap_dev_name }}" | grep -q "{{ ip_addr }}" || \
+        ip addr add "{{ ip_addr }}" dev "{{ tap_dev_name }}"
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts["architecture"]
+
 - name: Create virtual machines run_id={{ run_id }}
   ansible.builtin.command:
     cmd: ignite run --config "{{ run_files_path }}/{{ item.name }}.yaml" --runtime docker
