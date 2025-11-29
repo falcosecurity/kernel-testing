@@ -71,7 +71,7 @@ run_id: "here-goes-the-id"
 
 # Path to the generated SSH private key file
 ssh_key_path: "/root/.ssh"
-ssh_key_name: ignite_machines
+ssh_key_name: firecracker_machines
 
 # Path to the private key
 prv_key_path: "{{ ssh_key_path }}/{{ ssh_key_name }}"
