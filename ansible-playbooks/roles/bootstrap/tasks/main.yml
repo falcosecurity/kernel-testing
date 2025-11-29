@@ -15,23 +15,22 @@
     state: directory
     mode: '0755'
 
-- name: Set files directory for the current run run_id={{ run_id }}
-  delegate_to: localhost
-  ansible.builtin.set_fact:
-    shared_files_path: "./roles/bootstrap/files"
-    run_files_path: "{{ runtime_root }}/{{ run_id }}"
-
 - name: Checking if ssh key exists and if not generate a new one
   community.crypto.openssh_keypair:
     path: "{{ prv_key_path }}"
 
-- name: Create the shared files directory
+- name: Create the cached files directory
   ansible.builtin.file:
-    path: "{{ shared_files_path }}"
+    path: "{{ cached_files_path }}"
     state: directory
     mode: '0755'
 
-- name: Create the run files directory
+- name: Set run files directory for the current run run_id={{ run_id }}
+  delegate_to: localhost
+  ansible.builtin.set_fact:
+    run_files_path: "{{ runtime_root }}/{{ run_id }}"
+
+- name: Create the run files directory run run_id={{ run_id }}
   ansible.builtin.file:
     path: "{{ run_files_path }}"
     state: directory
@@ -44,15 +43,15 @@
 - name: Verify any conflict in tap device map
   delegate_to: localhost
   ansible.builtin.command: >
-    ./roles/bootstrap/check_net_conflicts.sh {{ tap_dev_map | to_json | quote }}
+    "{{ role_path }}/files/check_net_conflicts.sh" {{ tap_dev_map | to_json | quote }}
   changed_when: false
 
 - name: Template the vmconfig.json.j2 configuration file for machine and builders
   vars:
     kernel_basename: "{{ item.kernel | basename | regex_replace(':', '.') }}"
     rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
-    vmlinux_path: "{{ shared_files_path }}/{{ kernel_basename }}.vmlinux"
-    initrd_path: "{{ shared_files_path }}/{{ kernel_basename }}.initrd"
+    vmlinux_path: "{{ cached_files_path }}/{{ kernel_basename }}.vmlinux"
+    initrd_path: "{{ cached_files_path }}/{{ kernel_basename }}.initrd"
     rootfs_disk_path: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
     tap_dev_name: "{{ tap_dev_map[item.name].name }}"
   ansible.builtin.template:
@@ -85,7 +84,7 @@
   vars:
     kernel_basename: "{{ item.kernel | basename | regex_replace(':', '.') }}"
   args:
-    creates: "{{ shared_files_path }}/{{ kernel_basename }}.initrd"
+    creates: "{{ cached_files_path }}/{{ kernel_basename }}.initrd"
   loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts['architecture']
   become: true
@@ -121,13 +120,13 @@
       boot/initrd
 
     # Move extracted vmlinux and initrd to destination.
-    mv "$TMP_DIR/vmlinux" "{{ shared_files_path }}/{{ kernel_basename }}.vmlinux"
-    mv "$TMP_DIR/initrd"  "{{ shared_files_path }}/{{ kernel_basename }}.initrd"
+    mv "$TMP_DIR/vmlinux" "{{ cached_files_path }}/{{ kernel_basename }}.vmlinux"
+    mv "$TMP_DIR/initrd"  "{{ cached_files_path }}/{{ kernel_basename }}.initrd"
 
 - name: Create raw disk images containing ext4 filesystem from rootfs OCI images # noqa: risky-shell-pipe
   vars:
     rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
-    disk_image: "{{ shared_files_path }}/{{ rootfs_basename }}.ext4"
+    disk_image: "{{ cached_files_path }}/{{ rootfs_basename }}.ext4"
   args:
     creates: "{{ disk_image }}"
   loop: "{{ machines | union(builders) }}"
@@ -182,7 +181,7 @@
 - name: Clone raw disk images for the current run run_id={{ run_id }}
   vars:
     rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
-    original_image: "{{ shared_files_path }}/{{ rootfs_basename }}.ext4"
+    original_image: "{{ cached_files_path }}/{{ rootfs_basename }}.ext4"
     working_image: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
   # Create a lightweight CoW clone (if fs supports reflinks) and preserve raw disk sparseness.
   ansible.builtin.command: >

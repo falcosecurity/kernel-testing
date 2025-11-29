@@ -97,4 +97,8 @@ repos:
 local_repos_folder: "./roles/git_repos/files/repos"
 remote_repos_folder: "/root"
 
+# Directory where files that must persistent among different runs are stored.
+cached_files_path: "/root/kernel_testing_ci_cache"
+
+# Directory where ephemeral, run-specific files are stored.
 runtime_root: "{{ playbook_dir }}/runtime"
