@@ -1,5 +1,5 @@
 ---
-# Playbook used to generate the vm configuration files and start them using ignite tool.
+# Playbook used to generate the vm configuration files and start them using firecracker.
 # Check the role for more information
 - name: Play for creating virtual machines
   hosts: localhost
