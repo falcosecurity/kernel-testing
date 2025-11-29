@@ -96,3 +96,5 @@ repos:
 
 local_repos_folder: "./roles/git_repos/files/repos"
 remote_repos_folder: "/root"
+
+runtime_root: "{{ playbook_dir }}/runtime"

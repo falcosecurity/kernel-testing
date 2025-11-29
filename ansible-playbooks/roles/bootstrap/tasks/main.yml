@@ -6,6 +6,8 @@
     that:
       - machines is defined
       - ssh_key_path != ""
+      - runtime_root != ""
+      - run_id != ""
 
 - name: Check if the ~/.ssh directory exists, if not create it
   ansible.builtin.file:
@@ -13,20 +15,32 @@
     state: directory
     mode: '0755'
 
+- name: Set files directory for the current run run_id={{ run_id }}
+  delegate_to: localhost
+  ansible.builtin.set_fact:
+    shared_files_path: "./roles/bootstrap/files"
+    run_files_path: "{{ runtime_root }}/{{ run_id }}"
+
 - name: Checking if ssh key exists and if not generate a new one
   community.crypto.openssh_keypair:
     path: "{{ prv_key_path }}"
 
-- name: Create the files directory in bootstrap role
+- name: Create the shared files directory
   ansible.builtin.file:
-    path: "./roles/bootstrap/files"
+    path: "{{ shared_files_path }}"
+    state: directory
+    mode: '0755'
+
+- name: Create the run files directory
+  ansible.builtin.file:
+    path: "{{ run_files_path }}"
     state: directory
     mode: '0755'
 
 - name: Template the ignite-vm.yaml configuration file for machines
   ansible.builtin.template:
     src: ignite-vm.yaml.j2
-    dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
+    dest: "{{ run_files_path }}/{{ item.name }}.yaml"
     mode: '0755'
   loop:
     "{{ machines }}"
@@ -36,7 +50,7 @@
 - name: Template the ignite-vm.yaml configuration file for builders
   ansible.builtin.template:
     src: ignite-vm.yaml.j2
-    dest: "./roles/bootstrap/files/{{ item.name }}.yaml"
+    dest: "{{ run_files_path }}/{{ item.name }}.yaml"
     mode: '0755'
   loop:
     "{{ builders }}"
@@ -63,7 +77,7 @@
 
 - name: Create virtual machines run_id={{ run_id }}
   ansible.builtin.command:
-    cmd: ignite run --config "./roles/bootstrap/files/{{ item.name }}.yaml" --runtime docker
+    cmd: ignite run --config "{{ run_files_path }}/{{ item.name }}.yaml" --runtime docker
   register: ignite_run
   changed_when: ignite_run.rc == 0
   loop: "{{ machines | union(builders) }}"

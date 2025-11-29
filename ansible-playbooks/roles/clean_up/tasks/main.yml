@@ -2,19 +2,6 @@
 # tasks file for clean-up
 # this role removes the cluster and the files created by the bootstrap role
 
-- name: Find and save in a local variable all machines config files
-  ansible.builtin.find:
-    paths: ./roles/bootstrap/files
-    patterns: "*.yaml"
-  register: files_to_delete
-
-- name: Delete all the machine config files files
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
-  with_items: "{{ files_to_delete.files }}"
-
-
 # We search all the machines created for this run_id.
 # We make sure that all machines are stopped and then delete them.
 - name: Stop running machines and delete them
@@ -76,9 +63,9 @@
       loop: "{{ kernels.stdout_lines }}"
       changed_when: false
 
-- name: Remove the files directory in the bootstrap role
+- name: Remove the run files directory
   ansible.builtin.file:
-    path: "./roles/bootstrap/files"
+    path: "{{ runtime_root }}/{{ run_id }}"
     state: absent
 
 - name: Remove the inventory.ini file
