@@ -36,32 +36,6 @@
     state: directory
     mode: '0755'
 
-- import_role:
-    name: common
-    tasks_from: compute_tap_dev_map
-
-- name: Verify any conflict in tap device map
-  delegate_to: localhost
-  ansible.builtin.command: >
-    "{{ role_path }}/files/check_net_conflicts.sh" {{ tap_dev_map | to_json | quote }}
-  changed_when: false
-
-- name: Template the vmconfig.json.j2 configuration file for machine and builders
-  vars:
-    kernel_basename: "{{ item.kernel | basename | regex_replace(':', '.') }}"
-    rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
-    vmlinux_path: "{{ cached_files_path }}/{{ kernel_basename }}.vmlinux"
-    initrd_path: "{{ cached_files_path }}/{{ kernel_basename }}.initrd"
-    rootfs_disk_path: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
-    tap_dev_name: "{{ tap_dev_map[item.name].name }}"
-  ansible.builtin.template:
-    src: vmconfig.json.j2
-    dest: "{{ run_files_path }}/{{ item.name }}.json"
-    mode: '0755'
-  loop: "{{ machines | union(builders) }}"
-  when: item.arch == ansible_facts["architecture"]
-  delegate_to: localhost
-
 - name: Pull kernel and rootfs OCI images
   block:
     - name: Pull kernel OCI images
@@ -219,6 +193,16 @@
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts['architecture']
 
+- import_role:
+    name: common
+    tasks_from: compute_tap_dev_map
+
+- name: Verify any conflict in tap device map
+  delegate_to: localhost
+  ansible.builtin.command: >
+    "{{ role_path }}/files/check_net_conflicts.sh" {{ tap_dev_map | to_json | quote }}
+  changed_when: false
+
 - name: Create and configure tap devices for VMs
   delegate_to: localhost
   become: true
@@ -278,6 +262,22 @@
         state: started
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts['architecture']
+
+- name: Template the vmconfig.json.j2 configuration file for machine and builders
+  vars:
+    kernel_basename: "{{ item.kernel | basename | regex_replace(':', '.') }}"
+    rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
+    vmlinux_path: "{{ cached_files_path }}/{{ kernel_basename }}.vmlinux"
+    initrd_path: "{{ cached_files_path }}/{{ kernel_basename }}.initrd"
+    rootfs_disk_path: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
+    tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+  ansible.builtin.template:
+    src: vmconfig.json.j2
+    dest: "{{ run_files_path }}/{{ item.name }}.json"
+    mode: '0755'
+  loop: "{{ machines | union(builders) }}"
+  when: item.arch == ansible_facts["architecture"]
+  delegate_to: localhost
 
 - name: Create virtual machines run_id={{ run_id }}
   vars:
