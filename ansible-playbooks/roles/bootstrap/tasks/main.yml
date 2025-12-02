@@ -283,7 +283,7 @@
   vars:
     vm_name: "{{ item.name | regex_replace('[.]', '-') }}-{{ run_id }}"
     vm_config_path: "{{ run_files_path }}/{{ item.name }}.json"
-    vm_socket_path: "{{ run_files_path }}/{{ item.name }}.socket"
+    vm_socket_path: "/tmp/{{ run_id }}-{{ item.name }}.sock"
     vm_logs_path: "{{ run_files_path }}/{{ item.name }}.log"
   ansible.builtin.shell: >
     RUST_LOG=debug nohup firecracker \
