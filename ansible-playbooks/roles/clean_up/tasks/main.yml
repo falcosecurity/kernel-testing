@@ -10,7 +10,7 @@
   block:
     - name: Stop running machines run_id={{ run_id }}
       vars:
-        vm_socket: "{{ runtime_root }}/{{ run_id }}/{{ item.name }}.socket"
+        vm_socket: "/tmp/{{ run_id }}-{{ item.name }}.sock"
       ansible.builtin.shell: |
         curl --silent --show-error \
           --unix-socket "{{ vm_socket }}" \
@@ -37,6 +37,13 @@
       failed_when: false
       changed_when: pkill_result.rc == 0
       when: pgrep_result.rc == 0
+
+    - name: Delete unix socket files created by machines run_id={{ run_id }}
+      ansible.builtin.file:
+        path: "/tmp/{{ run_id }}-{{ item.name }}.sock"
+        state: absent
+      loop: "{{ machines | union(builders) }}"
+      when: item.arch == ansible_facts["architecture"]
 
 - name: Remove the run files directory
   ansible.builtin.file:
