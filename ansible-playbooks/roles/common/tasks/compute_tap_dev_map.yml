@@ -1,5 +1,4 @@
 - name: Compute tap device map
-  delegate_to: localhost
   ansible.builtin.command: >
     "{{ role_path }}/files/compute_tap_dev_map.sh"
     "{{ run_id }}"
@@ -10,6 +9,5 @@
   register: tap_dev_map_raw
 
 - name: Set tap device map
-  delegate_to: localhost
   ansible.builtin.set_fact:
     tap_dev_map: "{{ tap_dev_map_raw.stdout | from_json }}"

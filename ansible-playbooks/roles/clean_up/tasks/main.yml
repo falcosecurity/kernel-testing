@@ -5,7 +5,6 @@
 # We search all the machines created for this run_id.
 # We make sure that all machines are stopped and then delete them.
 - name: Stop running machines and delete them
-  delegate_to: localhost
   become: true
   block:
     - name: Stop running machines run_id={{ run_id }}
@@ -65,7 +64,6 @@
     tasks_from: compute_tap_dev_map
 
 - name: Stop all running dnsmasq-tap systemd services
-  delegate_to: localhost
   become: true
   block:
     - name: Stop dnsmasq-tap systemd services
@@ -85,5 +83,4 @@
   loop: "{{ tap_dev_map.values() }}"
   failed_when: false
   changed_when: false
-  delegate_to: localhost
   become: true

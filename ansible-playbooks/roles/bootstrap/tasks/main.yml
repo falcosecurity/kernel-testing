@@ -26,11 +26,10 @@
     mode: '0755'
 
 - name: Set run files directory for the current run run_id={{ run_id }}
-  delegate_to: localhost
   ansible.builtin.set_fact:
     run_files_path: "{{ runtime_root }}/{{ run_id }}"
 
-- name: Create the run files directory run run_id={{ run_id }}
+- name: Create the run files directory run_id={{ run_id }}
   ansible.builtin.file:
     path: "{{ run_files_path }}"
     state: directory
@@ -164,7 +163,6 @@
     creates: "{{ working_image }}"
   loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts['architecture']
-  delegate_to: localhost
   become: true
 
 - name: Setup ssh inside rootfs ext4 image clones
@@ -198,13 +196,11 @@
     tasks_from: compute_tap_dev_map
 
 - name: Verify any conflict in tap device map
-  delegate_to: localhost
   ansible.builtin.command: >
     "{{ role_path }}/files/check_net_conflicts.sh" {{ tap_dev_map | to_json | quote }}
   changed_when: false
 
 - name: Create and configure tap devices for VMs
-  delegate_to: localhost
   become: true
   block:
     - name: Create tap devices
@@ -235,7 +231,6 @@
       when: item.arch == ansible_facts["architecture"]
 
 - name: Start dnsmasq services
-  delegate_to: localhost
   become: true
   block:
     - name: Install dnsmasq-tap@.service
@@ -277,7 +272,6 @@
     mode: '0755'
   loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts["architecture"]
-  delegate_to: localhost
 
 - name: Create virtual machines run_id={{ run_id }}
   vars:
@@ -297,7 +291,6 @@
   changed_when: true
   loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts["architecture"]
-  delegate_to: localhost
   become: true
 
 - name: Template the inventory.ini.j2 configuration file to inventory.ini
@@ -305,7 +298,6 @@
     src: inventory.ini.j2
     dest: inventory.ini
     mode: '0755'
-  delegate_to: localhost
 
 - name: Refresh inventory to ensure that the new generated one is used
   ansible.builtin.meta: refresh_inventory
