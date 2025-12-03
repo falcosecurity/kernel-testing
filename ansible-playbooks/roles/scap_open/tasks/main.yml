@@ -2,7 +2,7 @@
 # tasks file for scap_open
 - name: Setting output directory for results
   ansible.builtin.set_fact:
-    output_dest_dir: "{{ output_dir }}/scap-open-test/{{ inventory_hostname }}"
+    scap_open_output_dest_dir: "{{ output_dir }}/scap-open-test/{{ inventory_hostname }}"
 
 - name: Create output directory on localhost
   become: false
@@ -10,7 +10,7 @@
   block:
     - name: Create output directory if it does not exist ({{ output_dir }})
       ansible.builtin.file:
-        path: "{{ output_dest_dir }}"
+        path: "{{ scap_open_output_dest_dir }}"
         state: directory
         mode: '0755'
 
@@ -19,13 +19,13 @@
     - name: Check modern-bpf support
       ansible.builtin.command:
         cmd: /tmp/scap-open --num_events 0 --modern_bpf
-      register: result
+      register: scap_open_result
       changed_when: false
   rescue:
     - name: Disable Modern Bpf support
       ansible.builtin.set_fact:
         scap_open_modern_bpf_supported: false
-      when: result.rc == 95
+      when: scap_open_result.rc == 95
 
 - name: Check Old Bpf Support
   block:
@@ -41,7 +41,7 @@
         path: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
         state: directory
         mode: "0766"
-      register: cmake_result
+      register: scap_open_cmake_result
 
     - name: Prepare cmake for repository
       ansible.builtin.command:
@@ -55,16 +55,16 @@
              ..
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
       changed_when: false
-      register: cmake_result
+      register: scap_open_cmake_result
   rescue:
     - name: Print error message to stdout --- build directory
       ansible.builtin.debug:
-        var: cmake_result
+        var: scap_open_cmake_result
   always:
     - name: Dump error message to file
       ansible.builtin.copy:
-        content: "{{ cmake_result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/cmake-configure.json"
+        content: "{{ scap_open_cmake_result | to_nice_json }}"
+        dest: "{{ scap_open_output_dest_dir }}/cmake-configure.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -82,24 +82,24 @@
       ansible.builtin.command:
         cmd: cmake --build . --target driver --parallel {{ cpus }}
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: km_result
+      register: scap_open_km_result
       changed_when: false
 
     - name: Load the kernel module
       ansible.builtin.command:
         cmd: insmod driver/scap.ko
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: km_result
+      register: scap_open_km_result
       changed_when: false
   rescue:
     - name: Print error message to stdout --- kernel module
       ansible.builtin.debug:
-        var: km_result
+        var: scap_open_km_result
   always:
     - name: Dump error message to file
       ansible.builtin.copy:
-        content: "{{ km_result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/kmod_build.json"
+        content: "{{ scap_open_km_result | to_nice_json }}"
+        dest: "{{ scap_open_output_dest_dir }}/kmod_build.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -110,24 +110,24 @@
       ansible.builtin.command:
         cmd: /tmp/scap-open --num_events 50 --kmod
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: result
+      register: scap_open_result
       changed_when: false
 
     - name: Unload the kernel module
       ansible.builtin.command:
         cmd: rmmod driver/scap.ko
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: result
+      register: scap_open_result
       changed_when: false
   rescue:
     - name: Print error message to stdout -- scap-open + kernel module
       ansible.builtin.debug:
-        var: result
+        var: scap_open_result
   always:
     - name: Dump error message to file
       ansible.builtin.copy:
-        content: "{{ result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/kmod_scap-open.json"
+        content: "{{ scap_open_result | to_nice_json }}"
+        dest: "{{ scap_open_output_dest_dir }}/kmod_scap-open.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -138,18 +138,18 @@
       ansible.builtin.command:
         cmd: cmake --build . --target bpf --parallel {{ cpus }}
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: bpf_probe_result
+      register: scap_open_bpf_probe_result
       when: scap_open_bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- build bpf probe
       ansible.builtin.debug:
-        var: bpf_probe_result
+        var: scap_open_bpf_probe_result
   always:
     - name: Dump error message to file
       ansible.builtin.copy:
-        content: "{{ bpf_probe_result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/bpf-probe_build.json"
+        content: "{{ scap_open_bpf_probe_result | to_nice_json }}"
+        dest: "{{ scap_open_output_dest_dir }}/bpf-probe_build.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -160,18 +160,18 @@
       ansible.builtin.command:
         cmd: /tmp/scap-open --num_events 50 --bpf driver/bpf/probe.o
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: result
+      register: scap_open_result
       when: scap_open_bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- scap-open + bpf probe
       ansible.builtin.debug:
-        var: result
+        var: scap_open_result
   always:
     - name: Dump error message to file
       ansible.builtin.copy:
-        content: "{{ result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/bpf-probe_scap-open.json"
+        content: "{{ scap_open_result | to_nice_json }}"
+        dest: "{{ scap_open_output_dest_dir }}/bpf-probe_scap-open.json"
         mode: '0755'
       delegate_to: localhost
       become: false
@@ -182,18 +182,18 @@
       ansible.builtin.command:
         cmd: /tmp/scap-open --num_events 50 --modern_bpf
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: result
+      register: scap_open_result
       when: scap_open_modern_bpf_supported
       changed_when: false
   rescue:
     - name: Print error message to stdout --- scap-open + modern probe
       ansible.builtin.debug:
-        var: result
+        var: scap_open_result
   always:
     - name: Dump error message to file
       ansible.builtin.copy:
-        content: "{{ result | to_nice_json }}"
-        dest: "{{ output_dest_dir }}/modern-bpf_scap-open.json"
+        content: "{{ scap_open_result | to_nice_json }}"
+        dest: "{{ scap_open_output_dest_dir }}/modern-bpf_scap-open.json"
         mode: '0755'
       delegate_to: localhost
       become: false

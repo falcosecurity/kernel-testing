@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: Checkout repo ⤵️
         uses: actions/checkout@v4
-    
+
       - name: Build matrix_gen
         working-directory: ./matrix_gen
         run: go build .
