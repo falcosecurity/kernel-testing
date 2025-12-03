@@ -10,7 +10,7 @@ inputs:
     description: 'libs repo to be tested, eg: falcosecurity/libs'
     required: false
     default: 'falcosecurity/libs'
-  build_matrix:  
+  build_matrix:
     description: 'Whether to generate matrixes as matrix artifact'
     required: false
     default: 'false'
@@ -24,7 +24,7 @@ outputs:
     value: ${{ steps.store-outputs.outputs.ansible }}
   matrix_output:
     description: "Uploaded matrix artifact name"
-    value: ${{ steps.store-outputs.outputs.matrix }}  
+    value: ${{ steps.store-outputs.outputs.matrix }}
 
 runs:
   using: "composite"
@@ -47,7 +47,7 @@ runs:
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: ansible-playbook bootstrap.yml --extra-vars "@vars.yml"
-      
+
     - name: Common setup
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
@@ -57,38 +57,38 @@ runs:
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: ansible-playbook git-repos.yml --extra-vars "@vars.yml"
-     
+
     - name: Run scap-open tests
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: |
-        ansible-playbook scap-open.yml --extra-vars "@vars.yml" || : 
-          
+        ansible-playbook scap-open.yml --extra-vars "@vars.yml" || :
+
     - name: Tar output files
       shell: bash
       run: tar -cvf $GITHUB_ACTION_PATH/ansible_output.tar ~/ansible_output_${{ github.run_id }}
-    
+
     - name: Build matrix_gen and generate matrix
       if: inputs.build_matrix == 'true'
       working-directory: ${{ github.action_path }}/matrix_gen
       env:
         GOPATH: /root/go
         GOCACHE: /root/.cache/go-build
-      shell: bash  
+      shell: bash
       run: |
         go build .
         ./matrix_gen --root-folder ~/ansible_output_${{ github.run_id }} --output-file matrix.md
-        
+
     - name: Set output
       id: store-outputs
       shell: bash
       run: |
         echo "ansible=${{ github.action_path }}/ansible_output.tar" >> $GITHUB_OUTPUT
-        echo "matrix=${{ github.action_path }}/matrix_gen/matrix.md" >> $GITHUB_OUTPUT    
-          
+        echo "matrix=${{ github.action_path }}/matrix_gen/matrix.md" >> $GITHUB_OUTPUT
+
     - name: Cleanup
       if: always()
       working-directory: ${{ github.action_path }}/ansible-playbooks
       shell: bash
       run: |
-        ansible-playbook clean-up.yml --extra-vars "@vars.yml" || : 
+        ansible-playbook clean-up.yml --extra-vars "@vars.yml" || :

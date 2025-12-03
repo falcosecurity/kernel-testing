@@ -27,11 +27,11 @@
 
 - name: Set run files directory for the current run run_id={{ run_id }}
   ansible.builtin.set_fact:
-    run_files_path: "{{ runtime_root }}/{{ run_id }}"
+    bootstrap_run_files_path: "{{ runtime_root }}/{{ run_id }}"
 
 - name: Create the run files directory run_id={{ run_id }}
   ansible.builtin.file:
-    path: "{{ run_files_path }}"
+    path: "{{ bootstrap_run_files_path }}"
     state: directory
     mode: '0755'
 
@@ -108,11 +108,11 @@
   ansible.builtin.shell: |
     # Enable Bash safety only if running under Bash.
     [ -n "$BASH_VERSION" ] && eval "set -eo pipefail"
-    
+
     CID=""
     TMP_DIR=""
     LOOPDEV=""
-    
+
     cleanup() {
       EXIT_STATUS=$?
       [ "$EXIT_STATUS" -ne 0 ] && rm -rf "{{ disk_image }}" || :
@@ -123,27 +123,27 @@
         rm -rf "$TMP_DIR" || :
       fi
     }
-    
+
     # Trigger cleanup at exit.
     trap cleanup EXIT
-    
+
     # Create an initial empty disk image.
     truncate -s 5G "{{ disk_image }}"
     mkfs.ext4 -F "{{ disk_image }}"
-    
+
     # Create container.
     CID=$(docker create "{{ item.rootfs }}" /bin/sh) || exit 1
-    
+
     # Create a temporary directory.
     TMP_DIR=$(mktemp -d) || exit 1
-    
+
     # Attach loop device explicitly
     LOOPDEV=$(losetup -f --show "{{ disk_image }}")
 
     # Mount disk on a loop device and copy the image content into the disk.
     mount -o loop "{{ disk_image }}" "$TMP_DIR"
     docker export "$CID" | tar -C "$TMP_DIR" -xf -
-    
+
     # Finalize and check disk integrity.
     sync
     umount "$TMP_DIR"
@@ -155,7 +155,7 @@
   vars:
     rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
     original_image: "{{ cached_files_path }}/{{ rootfs_basename }}.ext4"
-    working_image: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
+    working_image: "{{ bootstrap_run_files_path }}/{{ rootfs_basename }}.ext4"
   # Create a lightweight CoW clone (if fs supports reflinks) and preserve raw disk sparseness.
   ansible.builtin.command: >
     cp --sparse=always --reflink=auto "{{ original_image }}" "{{ working_image }}"
@@ -168,7 +168,7 @@
 - name: Setup ssh inside rootfs ext4 image clones
   vars:
     rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
-    disk_image: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
+    disk_image: "{{ bootstrap_run_files_path }}/{{ rootfs_basename }}.ext4"
   become: true
   block:
     - name: Ensure filesystem is clean before modifying rootfs ext4 image clones
@@ -191,13 +191,14 @@
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts['architecture']
 
-- import_role:
+- name: Run common/tasks/compute_tap_dev_map.yml
+  ansible.builtin.import_role:
     name: common
     tasks_from: compute_tap_dev_map
 
 - name: Verify any conflict in tap device map
   ansible.builtin.command: >
-    "{{ role_path }}/files/check_net_conflicts.sh" {{ tap_dev_map | to_json | quote }}
+    "{{ role_path }}/files/check_net_conflicts.sh" {{ common_tap_dev_map | to_json | quote }}
   changed_when: false
 
 - name: Create and configure tap devices for VMs
@@ -205,7 +206,7 @@
   block:
     - name: Create tap devices
       vars:
-        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+        tap_dev_name: "{{ common_tap_dev_map[item.name].name }}"
       ansible.builtin.command: ip tuntap add dev "{{ tap_dev_name }}" mode tap
       args:
         creates: "/sys/class/net/{{ tap_dev_name }}/ifindex"
@@ -214,7 +215,7 @@
 
     - name: Set tap devices up
       vars:
-        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+        tap_dev_name: "{{ common_tap_dev_map[item.name].name }}"
       ansible.builtin.command: ip link set "{{ tap_dev_name }}" up
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts["architecture"]
@@ -222,13 +223,14 @@
 
     - name: Set IP addresses on tap devices
       vars:
-        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
-        ip_addr: "{{ tap_dev_map[item.name].host_ip }}/30"
-      ansible.builtin.shell: |
-        ip -o addr show dev "{{ tap_dev_name }}" | grep -q "{{ ip_addr }}" || \
-        ip addr add "{{ ip_addr }}" dev "{{ tap_dev_name }}"
+        tap_dev_name: "{{ common_tap_dev_map[item.name].name }}"
+        ip_addr: "{{ common_tap_dev_map[item.name].host_ip }}/30"
+      ansible.builtin.command: ip addr add "{{ ip_addr }}" dev "{{ tap_dev_name }}"
       loop: "{{ machines | union(builders) }}"
-      when: item.arch == ansible_facts["architecture"]
+      when:
+        - item.arch == ansible_facts["architecture"]
+        - ip_addr not in lookup('pipe', 'ip -o addr show dev ' ~ tap_dev_name)
+      changed_when: true
 
 - name: Start dnsmasq services
   become: true
@@ -240,18 +242,16 @@
         owner: root
         group: root
         mode: "0644"
-      register: unit_file
+      notify: Reload systemd
 
-    - name: Reload systemd units
-      ansible.builtin.systemd:
-        daemon_reload: true
-      when: unit_file.changed
+    - name: Execute notified systemd reloading handler
+      ansible.builtin.meta: flush_handlers
 
     - name: Start dnsmasq service on each tap device
       vars:
-        tap_dev_name: "{{ tap_dev_map[item.name].name }}"
-        host_ip: "{{ tap_dev_map[item.name].host_ip }}"
-        guest_ip: "{{ tap_dev_map[item.name].guest_ip }}"
+        tap_dev_name: "{{ common_tap_dev_map[item.name].name }}"
+        host_ip: "{{ common_tap_dev_map[item.name].host_ip }}"
+        guest_ip: "{{ common_tap_dev_map[item.name].guest_ip }}"
       ansible.builtin.systemd:
         name: "dnsmasq-tap@{{ tap_dev_name }}:{{ host_ip }}:{{ guest_ip }}"
         state: started
@@ -264,11 +264,11 @@
     rootfs_basename: "{{ item.rootfs | basename | regex_replace(':', '.') }}"
     vmlinux_path: "{{ cached_files_path }}/{{ kernel_basename }}.vmlinux"
     initrd_path: "{{ cached_files_path }}/{{ kernel_basename }}.initrd"
-    rootfs_disk_path: "{{ run_files_path }}/{{ rootfs_basename }}.ext4"
-    tap_dev_name: "{{ tap_dev_map[item.name].name }}"
+    rootfs_disk_path: "{{ bootstrap_run_files_path }}/{{ rootfs_basename }}.ext4"
+    tap_dev_name: "{{ common_tap_dev_map[item.name].name }}"
   ansible.builtin.template:
     src: vmconfig.json.j2
-    dest: "{{ run_files_path }}/{{ item.name }}.json"
+    dest: "{{ bootstrap_run_files_path }}/{{ item.name }}.json"
     mode: '0755'
   loop: "{{ machines | union(builders) }}"
   when: item.arch == ansible_facts["architecture"]
@@ -276,9 +276,9 @@
 - name: Create virtual machines run_id={{ run_id }}
   vars:
     vm_name: "{{ item.name | regex_replace('[.]', '-') }}-{{ run_id }}"
-    vm_config_path: "{{ run_files_path }}/{{ item.name }}.json"
+    vm_config_path: "{{ bootstrap_run_files_path }}/{{ item.name }}.json"
     vm_socket_path: "/tmp/{{ run_id }}-{{ item.name }}.sock"
-    vm_logs_path: "{{ run_files_path }}/{{ item.name }}.log"
+    vm_logs_path: "{{ bootstrap_run_files_path }}/{{ item.name }}.log"
   ansible.builtin.shell: >
     RUST_LOG=debug nohup firecracker \
       --no-seccomp \

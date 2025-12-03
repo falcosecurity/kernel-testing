@@ -10,12 +10,14 @@
     - name: Stop running machines run_id={{ run_id }}
       vars:
         vm_socket: "/tmp/{{ run_id }}-{{ item.name }}.sock"
-      ansible.builtin.shell: |
-        curl --silent --show-error \
-          --unix-socket "{{ vm_socket }}" \
-          -X PUT http://localhost/actions \
-          -H 'Content-Type: application/json' \
-          -d '{"action_type":"SendCtrlAltDel"}'
+      ansible.builtin.uri:
+        url: "http://localhost/actions"
+        method: PUT
+        body: '{"action_type":"SendCtrlAltDel"}'
+        body_format: json
+        headers:
+          Content-Type: "application/json"
+        unix_socket: "{{ vm_socket }}"
       loop: "{{ machines | union(builders) }}"
       when: item.arch == ansible_facts["architecture"]
       changed_when: true
@@ -23,19 +25,19 @@
 
     - name: Wait for all machines to stop run_id={{ run_id }}
       ansible.builtin.command: pgrep -f "firecracker.*--id .*{{ run_id }}"
-      register: pgrep_result
+      register: clean_up_pgrep_result
       failed_when: false
       changed_when: false
-      until: pgrep_result.rc != 0
-      retries: 25
-      delay: 0.2
+      until: clean_up_pgrep_result.rc != 0
+      retries: 10
+      delay: 1
 
     - name: Force-kill remaining machines run_id={{ run_id }}
       ansible.builtin.command: pkill -KILL -f "firecracker.*--id .*{{ run_id }}"
-      register: pkill_result
+      register: clean_up_pkill_result
       failed_when: false
-      changed_when: pkill_result.rc == 0
-      when: pgrep_result.rc == 0
+      changed_when: clean_up_pkill_result.rc == 0
+      when: clean_up_pgrep_result.rc == 0
 
     - name: Delete unix socket files created by machines run_id={{ run_id }}
       ansible.builtin.file:
@@ -59,7 +61,8 @@
     path: "{{ output_dir }}"
     state: absent
 
-- import_role:
+- name: Run common/tasks/compute_tap_dev_map.yml
+  ansible.builtin.import_role:
     name: common
     tasks_from: compute_tap_dev_map
 
@@ -70,17 +73,17 @@
       ansible.builtin.systemd:
         name: "dnsmasq-tap@{{ item.name }}:{{ item.host_ip }}:{{ item.guest_ip }}"
         state: stopped
-      loop: "{{ tap_dev_map.values() }}"
+      loop: "{{ common_tap_dev_map.values() }}"
 
     - name: Remove all dnsmasq-tap DHCP lease files
       ansible.builtin.file:
         path: "/run/dnsmasq-tap-{{ item.name }}.leases"
         state: absent
-      loop: "{{ tap_dev_map.values() }}"
+      loop: "{{ common_tap_dev_map.values() }}"
 
 - name: Remove tap interfaces
   ansible.builtin.command: ip link del "{{ item.name }}"
-  loop: "{{ tap_dev_map.values() }}"
+  loop: "{{ common_tap_dev_map.values() }}"
   failed_when: false
   changed_when: false
   become: true

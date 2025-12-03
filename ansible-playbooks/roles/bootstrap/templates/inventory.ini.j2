@@ -2,13 +2,13 @@
 [machines]
 {% for item in machines %}
 {% if item.arch == ansible_facts["architecture"] %}
-{{ item.name }} ansible_host={{ tap_dev_map[item.name].guest_ip }} ansible_ssh_common_args='-o BindInterface={{ tap_dev_map[item.name].name }}' ansible_ssh_private_key_file={{ prv_key_path }}
+{{ item.name }} ansible_host={{ common_tap_dev_map[item.name].guest_ip }} ansible_ssh_common_args='-o BindInterface={{ common_tap_dev_map[item.name].name }}' ansible_ssh_private_key_file={{ prv_key_path }}
 {% endif %}
 {% endfor %}
 
 [builders]
 {% for item in builders %}
 {% if item.arch == ansible_facts["architecture"] %}
-{{ item.name }} ansible_host={{ tap_dev_map[item.name].guest_ip }} ansible_ssh_common_args='-o BindInterface={{ tap_dev_map[item.name].name }}' ansible_ssh_private_key_file={{ prv_key_path }}
+{{ item.name }} ansible_host={{ common_tap_dev_map[item.name].guest_ip }} ansible_ssh_common_args='-o BindInterface={{ common_tap_dev_map[item.name].name }}' ansible_ssh_private_key_file={{ prv_key_path }}
 {% endif %}
 {% endfor %}

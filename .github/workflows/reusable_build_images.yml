@@ -1,6 +1,6 @@
 name: Build and Push docker images
 on:
-  workflow_call:    
+  workflow_call:
     inputs:
       version:
         description: 'docker images version to be built/tagged'
@@ -26,7 +26,7 @@ jobs:
       matrix:
         arch: [amd64, arm64]
     runs-on: ${{ (matrix.arch == 'arm64' && 'ubuntu-22.04-arm') || 'ubuntu-22.04' }}
-    steps:  
+    steps:
       - name: Checkout repo
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -42,12 +42,12 @@ jobs:
         if: inputs.push
         run: |
           echo "PUSH=true" >> $GITHUB_ENV
-          
+
       - name: Set LATEST env var
         if: inputs.is_latest
         run: |
           echo "LATEST=true" >> $GITHUB_ENV
-          
+
       - name: Set TAG env var
         run: |
           echo "TAG=${{ inputs.version }}" >> $GITHUB_ENV

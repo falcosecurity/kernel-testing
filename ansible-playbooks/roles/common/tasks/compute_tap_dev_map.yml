@@ -6,8 +6,9 @@
           | selectattr('arch', 'equalto', ansible_facts['architecture'])
           | map(attribute='name')
           | join(' ')) }}"
-  register: tap_dev_map_raw
+  register: common_tap_dev_map_raw
+  changed_when: false
 
 - name: Set tap device map
   ansible.builtin.set_fact:
-    tap_dev_map: "{{ tap_dev_map_raw.stdout | from_json }}"
+    common_tap_dev_map: "{{ common_tap_dev_map_raw.stdout | from_json }}"
