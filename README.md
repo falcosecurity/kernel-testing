@@ -81,6 +81,10 @@ Therefore, running kernel-testing in your GitHub workflow is as easy as adding t
     # Whether to generate matrixes as matrix artifact.
     # Default: false
     build_matrix: 'true'
+
+    # Images tag to be used, in the form vX.Y.Z
+    # Required.
+    images_tag: 'v0.3.2'
 ```
 
 Then you can use action outputs to retrieve artifacts:
