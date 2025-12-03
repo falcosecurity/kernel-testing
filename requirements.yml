@@ -1,5 +1,8 @@
 ---
 collections:
   - name: community.docker
+    version: 4.8.2
   - name: community.crypto
+    version: 2.26.1
   - name: ansible.posix
+    version: 2.1.0
