@@ -87,3 +87,11 @@
   failed_when: false
   changed_when: false
   become: true
+
+- name: Remove machines from known_hosts
+  ansible.builtin.known_hosts:
+    path: "{{ ssh_key_path }}/known_hosts"
+    name: "{{ item.host_ip }}"
+    state: absent
+  loop: "{{ common_tap_dev_map.values() }}"
+  become: true
