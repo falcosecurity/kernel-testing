@@ -41,11 +41,12 @@ RUN yum install -y \
     yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ && \
 	source /opt/rh/devtoolset-9/enable
 
-RUN	curl -L -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.22.5/cmake-3.22.5-linux-$(uname -m).tar.gz && \
+ARG CMAKE_VERSION=3.24.4
+RUN	curl -L -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz && \
 	gzip -d /tmp/cmake.tar.gz && \
 	tar -xpf /tmp/cmake.tar --directory=/tmp && \
-	cp -R /tmp/cmake-3.22.5-linux-$(uname -m)/* /usr && \
-	rm -rf /tmp/cmake-3.22.5-linux-$(uname -m) cmake.tar && \
+	cp -R /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m)/* /usr && \
+	rm -rf /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m) cmake.tar && \
 	yum clean all && \
 	rm -rf /var/cache/yum /usr/man /usr/doc && \
 	systemctl enable dhclient && \
