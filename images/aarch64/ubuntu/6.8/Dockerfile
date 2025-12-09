@@ -1,6 +1,6 @@
-FROM ubuntu:23.10
+FROM ubuntu:24.04
 
-ARG VERSION=6.5.0-17
+ARG VERSION=6.8.0-91
 ARG URL='http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux/'
 
 WORKDIR /home/ubuntu
@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y \
 		wget && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/* && \
-	curl ${URL} | \
+    curl ${URL} | \
 		grep -E "linux-headers-${VERSION}|linux-tools-${VERSION}" | \
 		grep "arm64" | \
 		grep -v "64k" | \
