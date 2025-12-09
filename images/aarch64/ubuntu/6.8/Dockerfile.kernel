@@ -1,6 +1,6 @@
 FROM initrd-builder:0.0.1 AS builder
 
-ARG VERSION=6.5.0-17-generic
+ARG VERSION=6.8.0-91-generic
 ARG URL='http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux/'
 
 WORKDIR /home/ubuntu
