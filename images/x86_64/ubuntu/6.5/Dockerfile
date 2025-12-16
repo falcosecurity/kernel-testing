@@ -1,7 +1,7 @@
-FROM ubuntu:23.10
+FROM ubuntu:22.04
 
-ARG VERSION=6.5.0-17
-ARG URL='http://mirrors.edge.kernel.org/ubuntu/pool/main/l/linux/'
+ARG VERSION=6.5.0-1024-aws
+ARG URL='https://archive.ubuntu.com/ubuntu/pool/main/l/linux-aws-6.5/'
 
 WORKDIR /home/ubuntu
 
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y \
 	rm -rf /var/lib/apt/lists/* && \
 	curl ${URL} | \
 		grep -E "linux-headers-${VERSION}|linux-tools-${VERSION}|linux-tools-common_${VERSION}" | \
-		cut -d\" -f2 | \
+		cut -d\" -f8 | \
 		xargs -I@ curl -LO ${URL}@ && \
 	find . -name '*.deb' | xargs -n1 dpkg -i --force-depends && \
 	rm -f *.deb && \
