@@ -1,7 +1,7 @@
-FROM ubuntu:23.10
+FROM ubuntu:22.04
 
-ARG VERSION=6.5.0-17
-ARG URL='http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux/'
+ARG VERSION=6.5.0-1024-aws
+ARG URL='https://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux-aws-6.5/'
 
 WORKDIR /home/ubuntu
 
@@ -32,13 +32,6 @@ RUN apt-get update && apt-get install -y \
 	curl ${URL} | \
 		grep -E "linux-headers-${VERSION}|linux-tools-${VERSION}" | \
 		grep "arm64" | \
-		grep -v "64k" | \
-		cut -d\" -f8 | \
-		xargs -I@ curl -LO ${URL}@ && \
-	curl ${URL} | \
-		grep -E "linux-headers-${VERSION}|linux-tools-common-${VERSION}" | \
-		grep -E "_all.deb" | \
-		grep -v "64k" | \
 		cut -d\" -f8 | \
 		xargs -I@ curl -LO ${URL}@ && \
 	find . -name '*.deb' | xargs -n1 dpkg -i --force-depends && \
