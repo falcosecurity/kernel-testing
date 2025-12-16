@@ -37,9 +37,9 @@ RUN yum install -y \
 		systemd \
 		tar \
 	    wget \
-        sed && \
-    yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ && \
-	source /opt/rh/devtoolset-9/enable
+        sed \
+        devtoolset-9-gcc \
+        devtoolset-9-gcc-c++
 
 ARG CMAKE_VERSION=3.24.4
 RUN	curl -L -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz && \
