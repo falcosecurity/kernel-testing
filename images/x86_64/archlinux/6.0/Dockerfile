@@ -1,5 +1,8 @@
 FROM archlinux/archlinux:base-20221211.0.109768
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 WORKDIR /home/ubuntu
 
 RUN printf 'SigLevel = Never\nServer=https://archive.archlinux.org/repos/2022/12/11/$repo/os/$arch' > /etc/pacman.d/mirrorlist && \
@@ -17,7 +20,7 @@ pacman -Syyu --noconfirm && \
 		python \
 		rsync \
 		wget && \
-	yes | pacman -Scc && \
+	pacman -Scc --noconfirm && \
 	ln -sf /usr/share/zoneinfo/US/Eastern /etc/localtime && \
 	echo 'LANG=en_US.UTF-8' > /etc/locale.gen && \
 	locale-gen && \

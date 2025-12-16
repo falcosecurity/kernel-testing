@@ -3,6 +3,9 @@ FROM quay.io/centos/centos:stream8
 ARG VERSION=4.18.0-552
 ARG BASEOS_URL='https://vault.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 # Fix broken mirrors.
 RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo; \
     sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo; \

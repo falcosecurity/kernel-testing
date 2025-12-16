@@ -3,6 +3,9 @@ FROM amazonlinux:2
 ARG VERSION=5.15.117-73.143
 ARG URL='http://amazonlinux.us-east-1.amazonaws.com/2/extras/kernel-5.15/latest/x86_64'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 RUN yum install -y \
 		binutils-devel \
 		clang \

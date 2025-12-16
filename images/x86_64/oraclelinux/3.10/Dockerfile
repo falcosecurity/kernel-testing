@@ -3,6 +3,9 @@ FROM oraclelinux:7
 ARG VERSION=3.10.0-1160.92.1.0.2
 ARG URL='https://yum.oracle.com/repo/OracleLinux/OL7/MODRHCK/x86_64'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 COPY /dev.repo /etc/yum.repos.d/
 
 RUN yum install -y \

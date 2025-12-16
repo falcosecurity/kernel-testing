@@ -5,6 +5,9 @@ ARG HVERSION=6.2.6-300
 ARG ARCHITECTURE=aarch64
 ARG URL='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/38/Everything/aarch64/os/Packages'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 RUN dnf groupinstall -y 'Development Tools' && \
 	dnf install -y \
 		clang \

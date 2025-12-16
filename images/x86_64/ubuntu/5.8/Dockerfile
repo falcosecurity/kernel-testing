@@ -2,6 +2,9 @@ FROM ubuntu:20.04
 
 ARG VERSION=5.8.0-1041-aws
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 WORKDIR /home/ubuntu
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \

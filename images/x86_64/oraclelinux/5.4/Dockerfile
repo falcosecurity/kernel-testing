@@ -3,6 +3,9 @@ FROM oraclelinux:8
 ARG VERSION=5.4.17-2136.320.7.1
 ARG URL='https://yum.oracle.com/repo/OracleLinux/OL8/UEKR6/x86_64/'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 RUN yum install -y \
 		binutils-devel \
 		clang \

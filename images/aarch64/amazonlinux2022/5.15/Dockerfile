@@ -3,6 +3,8 @@ FROM amazonlinux:2022
 ARG VERSION=5.15.73-45.135
 ARG URL='https://al2022-repos-us-east-1-9761ab97.s3.dualstack.us-east-1.amazonaws.com/core/mirrors/latest/aarch64'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 RUN dnf groupinstall -y 'Development Tools' && \
 	dnf install -y \

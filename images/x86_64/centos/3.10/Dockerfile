@@ -3,6 +3,9 @@ FROM centos:centos7.9.2009
 ARG VERSION=3.10.0-1160
 ARG BASEOS_URL='https://vault.centos.org/centos/7.9.2009/os/x86_64/Packages'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 # Fix broken mirrors.
 RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo; \
     sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo; \
