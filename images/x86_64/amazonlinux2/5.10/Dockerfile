@@ -2,6 +2,7 @@ FROM amazonlinux:2
 
 ARG VERSION=5.10.184-175.749
 ARG URL='http://amazonlinux.us-east-1.amazonaws.com/2/extras/kernel-5.10/latest/x86_64'
+ARG CMAKE_VERSION
 
 # Use bash for all RUN steps with some safety options enabled.
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -31,14 +32,13 @@ RUN yum install -y \
 		xargs -I@ curl -Lo sources.rpm ${URL}/@ && \
 	yum install -y ./*.rpm && \
 	rm -v ./*.rpm && \
+	CMAKE_ARCH="x86_64" && \
+	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH}" && \
+	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
+		tar -C /usr --strip-components 1 "${CMAKE_RELEASE_NAME}/bin" "${CMAKE_RELEASE_NAME}/share" -xzpvf - && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \
 	echo 'UseDNS no' >> /etc/ssh/sshd_config && \
 	echo "root:root" | chpasswd && \
-	curl -LO https://cmake.org/files/v3.16/cmake-3.16.7-Linux-x86_64.tar.gz && \
-	tar -xaf cmake-3.16.7-Linux-x86_64.tar.gz && \
-	rm -vf cmake-3.16.7-Linux-x86_64.tar.gz && \
-	mv cmake-3.16.7-Linux-x86_64   /opt/cmake-3.16.7 && \
-	ln -sf /opt/cmake-3.16.7/bin/* /usr/bin/ && \
 	mkdir -p /lib/modules/${VERSION}.amzn2.x86_64/ && \
 	ln -s /usr/src/kernels/${VERSION}.amzn2.x86_64/ /lib/modules/${VERSION}.amzn2.x86_64/build && \
 	rm -vf /usr/bin/gcc /usr/bin/g++ && \

@@ -2,6 +2,7 @@ FROM centos:7
 
 # TARGETARCH is automatically set by BuildKit (arm64 or amd64)
 ARG TARGETARCH
+ARG CMAKE_VERSION
 
 # Use bash for all RUN steps with some safety options enabled.
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -24,7 +25,6 @@ RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo; \
     fi
 
 RUN yum install -y \
-		cmake \
 		curl \
 		dhclient \
 		gcc \
@@ -44,12 +44,9 @@ RUN yum install -y \
         devtoolset-9-gcc \
         devtoolset-9-gcc-c++
 
-ARG CMAKE_VERSION=3.24.4
-RUN	curl -L -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-$(uname -m).tar.gz && \
-	gzip -d /tmp/cmake.tar.gz && \
-	tar -xpf /tmp/cmake.tar --directory=/tmp && \
-	cp -R /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m)/* /usr && \
-	rm -rf /tmp/cmake-${CMAKE_VERSION}-linux-$(uname -m) cmake.tar && \
+RUN	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-$(uname -m)" && \
+	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
+		tar -C /usr --strip-components 1 "${CMAKE_RELEASE_NAME}/bin" "${CMAKE_RELEASE_NAME}/share" -xzpvf - && \
 	yum clean all && \
 	rm -rf /var/cache/yum /usr/man /usr/doc && \
 	systemctl enable dhclient && \

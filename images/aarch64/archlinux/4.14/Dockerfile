@@ -2,6 +2,7 @@ FROM lopsided/archlinux:latest
 
 ARG VERSION=4.14.15-1
 ARG URL='http://tardis.tiny-vps.com/aarm/packages'
+ARG CMAKE_VERSION
 
 # Use bash for all RUN steps with some safety options enabled.
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -11,7 +12,6 @@ WORKDIR /home/ubuntu
 RUN pacman -Syyu --noconfirm && \
 	pacman -S --noconfirm \
 		clang \
-		cmake \
 		gcc \
 		git \
 		libcap \
@@ -22,6 +22,10 @@ RUN pacman -Syyu --noconfirm && \
 		rsync \
 		systemd \
 		wget && \
+	CMAKE_ARCH="aarch64" && \
+	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH}" && \
+	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
+		tar -C /usr --strip-components 1 "${CMAKE_RELEASE_NAME}/bin" "${CMAKE_RELEASE_NAME}/share" -xzpvf - && \
 	ln -sf /usr/share/zoneinfo/US/Eastern /etc/localtime && \
 	echo 'LANG=en_US.UTF-8' > /etc/locale.gen && \
 	locale-gen && \

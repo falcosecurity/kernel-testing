@@ -6,16 +6,20 @@ CLEANUP ?= false
 REPOSITORY ?= ghcr.io/falcosecurity/kernel-testing
 ARCH ?= $(shell uname -m)
 YAML_FILE ?= images.yaml
+CMAKE_VERSION ?= $(shell cat CMAKE_VERSION)
 
 .PHONY: build-rootfs build-kernel generate-yaml build-all initrd-builder modernprobe-builder builder
 
 builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
-		echo "Dry run: Building builder image: docker build -t $(REPOSITORY)/builder:$(ARCH)-$(TAG)"; \
+		echo "Dry run: Building builder image: docker build -t $(REPOSITORY)/builder:$(ARCH)-$(TAG) --build-arg CMAKE_VERSION=\"$(CMAKE_VERSION)\" builder"; \
 	else \
 		echo "Building builder image"; \
 		image=$(REPOSITORY)/builder:$(ARCH); \
-		docker build -t $$image-$(TAG) builder || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
+		docker build \
+			-t $$image-$(TAG) \
+			--build-arg CMAKE_VERSION="$(CMAKE_VERSION)" \
+			 builder || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 		if [ "$(PUSH)" = "true" ]; then \
 			echo "Pushing image: $$image-$(TAG)"; \
 			docker push $$image-$(TAG); \
@@ -29,11 +33,14 @@ builder:
 
 modernprobe-builder:
 	if [ "$(DRY_RUN)" = "true" ]; then \
-		echo "Dry run: Building modernprobe-builder image: docker build -t $(REPOSITORY)/modernprobe-builder:$(ARCH)-$(TAG) modernprobe-builder"; \
+		echo "Dry run: Building modernprobe-builder image: docker build -t $(REPOSITORY)/modernprobe-builder:$(ARCH)-$(TAG) --build-arg CMAKE_VERSION=\"$(CMAKE_VERSION)\" modernprobe-builder"; \
 	else \
 		echo "Building modernprobe-builder image"; \
 		image=$(REPOSITORY)/modernprobe-builder:$(ARCH); \
-		docker build -t $$image-$(TAG) modernprobe-builder || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
+		docker build \
+			-t $$image-$(TAG) \
+			--build-arg CMAKE_VERSION="$(CMAKE_VERSION)" \
+			modernprobe-builder || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 		if [ "$(PUSH)" = "true" ]; then \
 			echo "Pushing image: $$image-$(TAG)"; \
 			docker push $$image-$(TAG); \
@@ -60,10 +67,13 @@ build-rootfs:
 		distro=$$(basename $$(dirname $$rootfs_dir)); \
 		image=$(REPOSITORY)/$$distro-image:$$version-$(ARCH); \
 		if [ "$(DRY_RUN)" = "true" ]; then \
-			echo "Dry run: Building rootfs image: docker build -t $$image-$(TAG) $$rootfs_dir"; \
+			echo "Dry run: Building rootfs image: docker build -t $$image-$(TAG) --build-arg CMAKE_VERSION=\"$(CMAKE_VERSION)\" $$rootfs_dir"; \
 		else \
 			echo "Building rootfs image: $$image-$(TAG)"; \
-			docker build -t $$image-$(TAG) $$rootfs_dir || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
+			docker build \
+				-t $$image-$(TAG) \
+				--build-arg CMAKE_VERSION="$(CMAKE_VERSION)" \
+				$$rootfs_dir || echo "FAIL: $$image-$(TAG)" >> failed.txt; \
 			if [ "$(PUSH)" = "true" ]; then \
 				echo "Pushing image: $$image-$(TAG)"; \
 				docker push $$image-$(TAG); \
@@ -120,10 +130,13 @@ build-kernel: initrd-builder
 	kernel_image=$(REPOSITORY)/$$distro-kernel:$$version-$$arch; \
 	if [ -n "$$rootfs_dir" ]; then \
 		if [ "$(DRY_RUN)" = "true" ]; then \
-			echo "Dry run: Building rootfs image: docker build -t $$rootfs_image $$rootfs_dir"; \
+			echo "Dry run: Building rootfs image: docker build -t $$rootfs_image --build-arg CMAKE_VERSION=\"$(CMAKE_VERSION)\" $$rootfs_dir"; \
 		else \
 			echo "Building rootfs image: $$rootfs_image"; \
-			docker build -t $$rootfs_image $$rootfs_dir; \
+			docker build \
+				-t $$rootfs_image \
+				--build-arg CMAKE_VERSION="$(CMAKE_VERSION)" \
+				$$rootfs_dir; \
 			if [ "$(PUSH)" = "true" ]; then \
 				echo "Pushing image: $$rootfs_image"; \
 				docker push $$rootfs_image; \
