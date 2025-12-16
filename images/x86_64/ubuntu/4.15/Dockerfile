@@ -3,6 +3,9 @@ FROM ubuntu:18.04
 ARG VERSION=4.15.0-1118-aws
 ARG URL='https://archive.ubuntu.com/ubuntu/pool/main/l/linux-aws/'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 WORKDIR /home/ubuntu
 
 RUN apt-get update && apt-get install -y \

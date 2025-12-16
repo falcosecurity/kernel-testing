@@ -4,6 +4,9 @@ ARG VERSION=5.15.0-8.91.4.1
 ARG URL='https://yum.oracle.com/repo/OracleLinux/OL9/baseos/latest/aarch64'
 ARG ARCHITECTURE='aarch64'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 RUN yum install -y \
 		binutils-devel \
 		clang \

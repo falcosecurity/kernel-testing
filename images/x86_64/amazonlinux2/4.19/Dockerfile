@@ -3,6 +3,9 @@ FROM amazonlinux:2
 ARG VERSION=4.19.84-33.70
 ARG URL='http://amazonlinux.us-east-1.amazonaws.com/2/extras/kernel-ng/latest/x86_64'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 RUN yum install -y \
 		binutils-devel \
 		clang \

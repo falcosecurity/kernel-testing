@@ -3,6 +3,9 @@ FROM quay.io/centos/centos:stream9
 ARG VERSION=5.14.0-648
 ARG APPSTR_URL='http://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 RUN dnf groupinstall -y 'Development Tools' && \
 	dnf install -y --allowerasing \
 		clang \

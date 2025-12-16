@@ -3,6 +3,9 @@ FROM ubuntu:22.04
 ARG VERSION=6.2.0-1018-aws
 ARG URL='https://archive.ubuntu.com/ubuntu/pool/main/l/linux-aws-6.2/'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 WORKDIR /home/ubuntu
 
 RUN apt-get update && apt-get install -y \

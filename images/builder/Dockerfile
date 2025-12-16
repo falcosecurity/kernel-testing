@@ -3,6 +3,9 @@ FROM centos:7
 # TARGETARCH is automatically set by BuildKit (arm64 or amd64)
 ARG TARGETARCH
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 COPY /dhclient.service /usr/lib/systemd/system/
 
 # Fix broken mirrors - centos:7 eol

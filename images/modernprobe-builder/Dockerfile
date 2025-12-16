@@ -1,5 +1,8 @@
 FROM fedora:latest
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 COPY /dhclient.service /usr/lib/systemd/system/
 
 RUN dnf install -y \

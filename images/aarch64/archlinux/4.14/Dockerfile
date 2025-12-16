@@ -3,6 +3,9 @@ FROM lopsided/archlinux:latest
 ARG VERSION=4.14.15-1
 ARG URL='http://tardis.tiny-vps.com/aarm/packages'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 WORKDIR /home/ubuntu
 
 RUN pacman -Syyu --noconfirm && \
@@ -32,4 +35,4 @@ RUN pacman -Syyu --noconfirm && \
 	pacman -U --noconfirm ./headers.tar.xz && \
 	rm -v ./headers.tar.xz && \
 	ln -s /usr/lib/systemd/systemd /sbin/init && \
-	yes | pacman -Scc || exit 0
+	pacman -Scc --noconfirm || exit 0

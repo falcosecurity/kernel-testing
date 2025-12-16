@@ -3,6 +3,8 @@ FROM amazonlinux:2023
 ARG VERSION=6.1.34-58
 ARG URL='https://cdn.amazonlinux.com/al2023/core/mirrors/latest/x86_64'
 
+# Use bash for all RUN steps with some safety options enabled.
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 RUN dnf groupinstall -y 'Development Tools' && \
 	dnf install -y \
