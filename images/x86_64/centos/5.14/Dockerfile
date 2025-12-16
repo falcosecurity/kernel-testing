@@ -1,6 +1,6 @@
 FROM quay.io/centos/centos:stream9
 
-ARG VERSION=5.14.0-412
+ARG VERSION=5.14.0-648
 ARG APPSTR_URL='http://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages'
 
 RUN dnf groupinstall -y 'Development Tools' && \
