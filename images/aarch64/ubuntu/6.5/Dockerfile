@@ -2,6 +2,7 @@ FROM ubuntu:22.04
 
 ARG VERSION=6.5.0-1024-aws
 ARG URL='https://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux-aws-6.5/'
+ARG CMAKE_VERSION
 
 # Use bash for all RUN steps with some safety options enabled.
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -11,8 +12,6 @@ WORKDIR /home/ubuntu
 RUN apt-get update && apt-get install -y \
 		build-essential \
 		clang \
-		cmake \
-		curl \
 		curl \
 		dbus \
 		git \
@@ -39,6 +38,10 @@ RUN apt-get update && apt-get install -y \
 		xargs -I@ curl -LO ${URL}@ && \
 	find . -name '*.deb' | xargs -n1 dpkg -i --force-depends && \
 	rm -f *.deb && \
+	CMAKE_ARCH="aarch64" && \
+	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH}" && \
+	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
+		tar -C /usr --strip-components 1 "${CMAKE_RELEASE_NAME}/bin" "${CMAKE_RELEASE_NAME}/share" -xzpvf - && \
 	sed -ie '/^ConditionVirtualization.*/d' /lib/systemd/system/systemd-timesyncd.service && \
 	echo "" > /etc/machine-id && echo "" > /var/lib/dbus/machine-id  && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \

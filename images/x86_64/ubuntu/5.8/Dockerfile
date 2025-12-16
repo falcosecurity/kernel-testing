@@ -1,6 +1,7 @@
 FROM ubuntu:20.04
 
 ARG VERSION=5.8.0-1041-aws
+ARG CMAKE_VERSION
 
 # Use bash for all RUN steps with some safety options enabled.
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -10,7 +11,6 @@ WORKDIR /home/ubuntu
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 		build-essential \
 		clang-7 \
-		cmake \
 		curl \
 		dbus \
 		git \
@@ -32,6 +32,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
 		wget && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/* && \
+	CMAKE_ARCH="x86_64" && \
+	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH}" && \
+	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
+		tar -C /usr --strip-components 1 "${CMAKE_RELEASE_NAME}/bin" "${CMAKE_RELEASE_NAME}/share" -xzpvf - && \
 	echo "" > /etc/machine-id && echo "" > /var/lib/dbus/machine-id && \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \
 	echo 'UseDNS no' >> /etc/ssh/sshd_config && \

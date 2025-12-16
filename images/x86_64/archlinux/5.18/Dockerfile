@@ -1,5 +1,7 @@
 FROM archlinux/archlinux:base-20220807.0.72894
 
+ARG CMAKE_VERSION
+
 # Use bash for all RUN steps with some safety options enabled.
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
@@ -9,7 +11,6 @@ RUN printf 'SigLevel = Never\nServer=https://archive.archlinux.org/repos/2022/08
 pacman -Syyu --noconfirm && \
 	pacman -S --noconfirm \
 		clang \
-		cmake \
 		gcc \
 		git \
 		libcap \
@@ -21,6 +22,10 @@ pacman -Syyu --noconfirm && \
 		rsync \
 		wget && \
 	pacman -Scc --noconfirm && \
+	CMAKE_ARCH="x86_64" && \
+	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH}" && \
+	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
+		tar -C /usr --strip-components 1 "${CMAKE_RELEASE_NAME}/bin" "${CMAKE_RELEASE_NAME}/share" -xzpvf - && \
 	ln -sf /usr/share/zoneinfo/US/Eastern /etc/localtime && \
 	echo 'LANG=en_US.UTF-8' > /etc/locale.gen && \
 	locale-gen && \

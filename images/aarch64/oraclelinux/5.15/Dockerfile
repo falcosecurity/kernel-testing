@@ -3,6 +3,7 @@ FROM oraclelinux:9
 ARG VERSION=5.15.0-8.91.4.1
 ARG URL='https://yum.oracle.com/repo/OracleLinux/OL9/baseos/latest/aarch64'
 ARG ARCHITECTURE='aarch64'
+ARG CMAKE_VERSION
 
 # Use bash for all RUN steps with some safety options enabled.
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
@@ -28,10 +29,9 @@ RUN yum install -y \
 	sed -i -e 's/^AcceptEnv LANG LC_\*$/#AcceptEnv LANG LC_*/' /etc/ssh/sshd_config && \
 	echo "root:root" | chpasswd && \
 	echo 'UseDNS no' >> /etc/ssh/sshd_config && \
-	curl -LO https://cmake.org/files/v3.19/cmake-3.19.8-Linux-aarch64.tar.gz && \
-	tar -xaf cmake-3.19.8-Linux-aarch64.tar.gz && \
-	rm -vf cmake-3.19.8-Linux-aarch64.tar.gz && \
-	mv cmake-3.19.8-Linux-aarch64   /opt/cmake-3.19.8 && \
-	ln -sf /opt/cmake-3.19.8/bin/* /usr/bin/ && \
+	CMAKE_ARCH="aarch64" && \
+	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH}" && \
+	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
+		tar -C /usr --strip-components 1 "${CMAKE_RELEASE_NAME}/bin" "${CMAKE_RELEASE_NAME}/share" -xzpvf - && \
 	mkdir -p /lib/modules/5.15.0-8.91.4.1.el9uek.${ARCHITECTURE}/ && \
 	ln -s /usr/src/kernels/5.15.0-8.91.4.1.el9uek.${ARCHITECTURE}/ /lib/modules/5.15.0-8.91.4.1.el9uek.${ARCHITECTURE}/build
