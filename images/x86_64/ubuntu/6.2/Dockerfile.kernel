@@ -1,14 +1,14 @@
 FROM initrd-builder:0.0.1 AS builder
 
-ARG VERSION=6.2.0-36-generic
-ARG URL='http://mirrors.edge.kernel.org/ubuntu/pool/main/l/linux/'
+ARG VERSION=6.2.0-1018-aws
+ARG URL='https://archive.ubuntu.com/ubuntu/pool/main/l/linux-aws-6.2/'
 
 WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
 		curl ${URL} | \
 		grep -E "linux-image-unsigned-${VERSION}|linux-modules-${VERSION}" | \
-		cut -d\" -f2 | \
+		cut -d\" -f8 | \
 		xargs -I@ curl -LO ${URL}@ && \
 	mkdir extracted && \
 	ls *deb | \
