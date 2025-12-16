@@ -25,7 +25,7 @@ RUN dnf groupinstall -y 'Development Tools' && \
 		xargs -I@ curl -Lo headers.rpm ${URL}@ && \
     grep -E 'kernel-devel-'${VERSION}'.*.rpm' primary.xml | grep href | cut -d\"  -f2 | \
 		xargs -I@ curl -Lo sources.rpm ${URL}@ && \
-	dnf install -y ./headers.rpm ./sources.rpm && \
+	rpm -ivh --force --nodeps ./headers.rpm ./sources.rpm && \
 	rm -vf ./headers.rpm ./sources.rpm && \
 	dnf clean all && \
 	rm -rf /var/cache/yum && \
