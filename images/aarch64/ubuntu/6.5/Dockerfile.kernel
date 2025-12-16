@@ -1,14 +1,13 @@
 FROM initrd-builder:0.0.1 AS builder
 
-ARG VERSION=6.5.0-17-generic
-ARG URL='http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux/'
+ARG VERSION=6.5.0-1024-aws
+ARG URL='https://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux-aws-6.5/'
 
 WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
                 curl ${URL} | \
                 grep 'arm64' | \
-                grep -v '64k' | \
                 grep -oE "linux-image-unsigned-${VERSION}.*deb\"|linux-modules-${VERSION}.*deb\"" | \
                 tr -d '"' | \
                 xargs -I@ curl -LO ${URL}@ && \
