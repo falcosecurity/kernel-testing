@@ -1,4 +1,4 @@
-ARG VERSION=5.14.0-412
+ARG VERSION=5.14.0-648
 ARG BASEOS_URL='https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/os/Packages'
 ARG APPSTR_URL='http://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/Packages'
 ARG ARCHITECTURE=x86_64
@@ -31,7 +31,7 @@ RUN touch .placeholder && \
 	cd .. && \
 	extract-vmlinux $(find ./extracted/ -name 'vmlinuz*') > extracted/vmlinux
 
-FROM quay.io/centos/centos:stream9 as kmod-builder
+FROM quay.io/centos/centos:stream9 AS kmod-builder
 
 ARG VERSION
 ARG BASEOS_URL
