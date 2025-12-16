@@ -1,7 +1,12 @@
 FROM quay.io/centos/centos:stream8
 
-ARG VERSION=4.18.0-536
-ARG BASEOS_URL='http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages'
+ARG VERSION=4.18.0-552
+ARG BASEOS_URL='https://vault.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages'
+
+# Fix broken mirrors.
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo; \
+    sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo; \
+    sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo
 
 RUN dnf groupinstall -y 'Development Tools' && \
 	dnf install -y --allowerasing \

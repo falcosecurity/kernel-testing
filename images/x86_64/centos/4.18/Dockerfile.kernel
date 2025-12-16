@@ -1,5 +1,5 @@
-ARG VERSION=4.18.0-536
-ARG BASEOS_URL='http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages'
+ARG VERSION=4.18.0-552
+ARG BASEOS_URL='https://vault.centos.org/centos/8-stream/BaseOS/x86_64/os/Packages'
 ARG ARCHITECTURE=x86_64
 
 FROM initrd-builder:0.0.1 AS stage1
@@ -29,7 +29,7 @@ RUN touch .placeholder && \
 	cd .. && \
 	extract-vmlinux $(find ./extracted/ -name 'vmlinuz*') > extracted/vmlinux
 
-FROM quay.io/centos/centos:stream8 as kmod-builder
+FROM quay.io/centos/centos:stream8 AS kmod-builder
 
 ARG VERSION
 ARG BASEOS_URL
@@ -38,6 +38,11 @@ ARG ARCHITECTURE
 WORKDIR /home/ubuntu
 COPY --from=stage1 /home/ubuntu/extracted   /home/ubuntu/extracted/
 COPY --from=stage1 /opt/initrd-builder/*    /opt/initrd-builder/
+
+# Fix broken mirrors.
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo; \
+    sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo; \
+    sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo
 
 RUN dnf groupinstall -y 'Development Tools' && \
 	cp -v /opt/initrd-builder/Makefile.virtio_mmio Makefile && \
