@@ -1,7 +1,7 @@
 FROM ubuntu:18.04
 
-ARG VERSION=4.15.0-213
-ARG URL='http://mirrors.edge.kernel.org/ubuntu/pool/main/l/linux/'
+ARG VERSION=4.15.0-1118-aws
+ARG URL='https://archive.ubuntu.com/ubuntu/pool/main/l/linux-aws/'
 
 WORKDIR /home/ubuntu
 
@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y \
 	curl ${URL} | \
 		grep -E "linux-headers-${VERSION}|linux-tools-${VERSION}|linux-tools-common_${VERSION}" | \
 		grep -vE 'i386|lowlatency' | \
-		cut -d\" -f2 | \
+		cut -d\" -f8 | \
 		xargs -I@ curl -LO ${URL}@ && \
 	find . -name '*.deb' | xargs -n1 dpkg -i --force-depends && \
 	rm -f *.deb && \

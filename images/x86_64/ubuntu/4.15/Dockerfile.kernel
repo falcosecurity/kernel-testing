@@ -1,20 +1,20 @@
 FROM initrd-builder:0.0.1 AS builder
 
-ARG VERSION=4.15.0-213-generic
-ARG URL='http://mirrors.edge.kernel.org/ubuntu/pool/main/l/linux/'
+ARG VERSION=4.15.0-1118-aws
+ARG URL='https://archive.ubuntu.com/ubuntu/pool/main/l/linux-aws/'
 
 WORKDIR /home/ubuntu
 
 RUN touch .placeholder && \
 	curl ${URL} | \
-		grep -E "kernel-image-${VERSION}|linux-modules-${VERSION}" | \
+		grep -E "linux-image-${VERSION}|linux-modules-${VERSION}" | \
 		grep -E "amd64" | \
-		cut -d\" -f2 | \
+		cut -d\" -f8 | \
 		xargs -I@ curl -LO ${URL}@ && \
 	mkdir extracted && \
 	ls *deb | \
 		xargs -I@ dpkg -x @ extracted && \
-	extract-vmlinux extracted/boot/vmlinuz > out/vmlinux && \
+	extract-vmlinux extracted/boot/vmlinuz-${VERSION} > out/vmlinux && \
 	cd extracted && \
 	/opt/initrd-builder/create.sh
 
