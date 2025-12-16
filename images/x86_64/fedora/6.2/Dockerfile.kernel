@@ -1,6 +1,6 @@
 ARG VERSION=6.2.9-300
 ARG HVERSION=6.2.6-300
-ARG URL='https://mirrors.kernel.org/fedora/releases/38/Everything/x86_64/os/Packages'
+ARG URL='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases/38/Everything/x86_64/os/Packages'
 ARG ARCHITECTURE=x86_64
 
 FROM initrd-builder:0.0.1 AS stage1
@@ -33,7 +33,7 @@ RUN touch .placeholder && \
 	find . -name '*.xz' -exec xz -d {} \; && \
 	extract-vmlinux $(find lib/modules -name vmlinuz) > /home/ubuntu/extracted/vmlinux
 
-FROM fedora:38 as kmod-builder
+FROM fedora:38 AS kmod-builder
 
 ARG VERSION
 ARG HVERSION
