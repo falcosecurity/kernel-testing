@@ -1,7 +1,12 @@
 FROM centos:centos7.9.2009
 
 ARG VERSION=3.10.0-1160
-ARG BASEOS_URL='http://mirror.centos.org/centos/7.9.2009/os/x86_64/Packages'
+ARG BASEOS_URL='https://vault.centos.org/centos/7.9.2009/os/x86_64/Packages'
+
+# Fix broken mirrors.
+RUN sed -i s/mirror.centos.org/vault.centos.org/g /etc/yum.repos.d/*.repo; \
+    sed -i s/^#.*baseurl=http/baseurl=https/g /etc/yum.repos.d/*.repo; \
+    sed -i s/^mirrorlist=http/#mirrorlist=https/g /etc/yum.repos.d/*.repo
 
 RUN yum group install -y "Development Tools" && \
 	yum install -y \
