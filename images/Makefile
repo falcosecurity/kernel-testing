@@ -126,8 +126,8 @@ build-kernel: initrd-builder
 	arch=$(ARCH); \
 	rootfs_dir=$$(find . -type d -path "./$$arch/$$distro/$$version"); \
 	kernel_dir=$$(find . -type d -path "./$$arch/$$distro/$$version"); \
-	rootfs_image=$(REPOSITORY)/$$distro-image:$$version-$$arch; \
-	kernel_image=$(REPOSITORY)/$$distro-kernel:$$version-$$arch; \
+	rootfs_image=$(REPOSITORY)/$$distro-image:$$version-$$arch-$(TAG); \
+	kernel_image=$(REPOSITORY)/$$distro-kernel:$$version-$$arch-$(TAG); \
 	if [ -n "$$rootfs_dir" ]; then \
 		if [ "$(DRY_RUN)" = "true" ]; then \
 			echo "Dry run: Building rootfs image: docker build -t $$rootfs_image --build-arg CMAKE_VERSION=\"$(CMAKE_VERSION)\" $$rootfs_dir"; \
@@ -148,7 +148,10 @@ build-kernel: initrd-builder
 			echo "Dry run: Building kernel image: docker build -t $$kernel_image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir"; \
 		else \
 			echo "Building kernel image: $$kernel_image"; \
-			docker build -t $$kernel_image -f $$kernel_dir/Dockerfile.kernel $$kernel_dir; \
+			docker build \
+				-t $$kernel_image \
+				-f $$kernel_dir/Dockerfile.kernel \
+				$$kernel_dir; \
 			if [ "$(PUSH)" = "true" ]; then \
 				echo "Pushing image: $$kernel_image"; \
 				docker push $$kernel_image; \
