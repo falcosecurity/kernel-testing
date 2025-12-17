@@ -1,7 +1,6 @@
 FROM ubuntu:22.04
 
 ARG VERSION=6.5.0-1024-aws
-ARG URL='https://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux-aws-6.5/'
 ARG CMAKE_VERSION
 
 # Use bash for all RUN steps with some safety options enabled.
@@ -20,6 +19,8 @@ RUN apt-get update && apt-get install -y \
 		kmod \
 		libcap-dev \
 		libelf-dev \
+		linux-headers-${VERSION} \
+		linux-tools-${VERSION} \
 		llvm \
 		net-tools \
 		openssh-server \
@@ -31,13 +32,6 @@ RUN apt-get update && apt-get install -y \
 		wget && \
 	apt-get clean && \
 	rm -rf /var/lib/apt/lists/* && \
-	curl ${URL} | \
-		grep -E "linux-headers-${VERSION}|linux-tools-${VERSION}" | \
-		grep "arm64" | \
-		cut -d\" -f8 | \
-		xargs -I@ curl -LO ${URL}@ && \
-	find . -name '*.deb' | xargs -n1 dpkg -i --force-depends && \
-	rm -f *.deb && \
 	CMAKE_ARCH="aarch64" && \
 	CMAKE_RELEASE_NAME="cmake-${CMAKE_VERSION}-linux-${CMAKE_ARCH}" && \
 	curl -L "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${CMAKE_RELEASE_NAME}.tar.gz" | \
