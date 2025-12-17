@@ -28,7 +28,7 @@ RUN touch .placeholder && \
 	cd .. && \
 	extract-vmlinux $(find ./extracted/ -name 'vmlinuz-*') > extracted/vmlinux
 
-FROM amazonlinux:2 as kmod-builder
+FROM amazonlinux:2 AS kmod-builder
 
 ARG VERSION
 ARG URL
