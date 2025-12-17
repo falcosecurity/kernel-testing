@@ -30,7 +30,7 @@ RUN touch .placeholder && \
 	find . -name '*.xz' -exec xz -d {} \; && \
 	extract-vmlinux $(find lib/modules -name vmlinuz) > /home/ubuntu/extracted/vmlinux
 
-FROM fedora:33 as kmod-builder
+FROM fedora:33 AS kmod-builder
 
 ARG VERSION
 ARG HVERSION

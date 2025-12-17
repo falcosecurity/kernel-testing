@@ -26,7 +26,7 @@ RUN touch .placeholder && \
 	cd .. && \
 	extract-vmlinux $(find ./extracted/ -name 'vmlinuz') > extracted/vmlinux
 
-FROM oraclelinux:9 as kmod-builder
+FROM oraclelinux:9 AS kmod-builder
 
 ARG VERSION
 ARG URL
