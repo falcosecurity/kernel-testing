@@ -35,6 +35,7 @@ machines:
   - {name: "fedora-5.17", kernel: "{{ repo }}/fedora-kernel:5.17-x86_64-{{ tag }}", rootfs: "{{ repo }}/fedora-image:5.17-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "fedora-5.8", kernel: "{{ repo }}/fedora-kernel:5.8-x86_64-{{ tag }}", rootfs: "{{ repo }}/fedora-image:5.8-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "fedora-6.2", kernel: "{{ repo }}/fedora-kernel:6.2-x86_64-{{ tag }}", rootfs: "{{ repo }}/fedora-image:6.2-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
+  - {name: "oraclelinux-3.10", kernel: "{{ repo }}/oraclelinux-kernel:3.10-x86_64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:3.10-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "oraclelinux-4.14", kernel: "{{ repo }}/oraclelinux-kernel:4.14-x86_64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:4.14-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "oraclelinux-5.15", kernel: "{{ repo }}/oraclelinux-kernel:5.15-x86_64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:5.15-x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
   - {name: "oraclelinux-5.4", kernel: "{{ repo }}/oraclelinux-kernel:5.4-x86_64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:5.4-x86_64-{{ tag }}", arch: "x86_64", skip_legacy_bpf_tests: true} # noqa: yaml[line-length]

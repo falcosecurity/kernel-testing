@@ -38,6 +38,7 @@
         - ansible_kernel is version(scap_open_bpf_minimum_kver[ansible_architecture],'>=')
         - machines
           | selectattr('name', 'equalto', inventory_hostname)
+          | selectattr('arch', 'equalto', ansible_architecture)
           | map(attribute='skip_legacy_bpf_tests')
           | map('default', false)
           | select('equalto', true)
