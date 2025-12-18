@@ -46,7 +46,7 @@ machines:
   - {name: "fedora-6.2", kernel: "{{ repo }}/fedora-kernel:6.2-aarch64-{{ tag }}", rootfs: "{{ repo }}/fedora-image:6.2-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
   - {name: "oraclelinux-4.14", kernel: "{{ repo }}/oraclelinux-kernel:4.14-aarch64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:4.14-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
   - {name: "oraclelinux-5.15", kernel: "{{ repo }}/oraclelinux-kernel:5.15-aarch64-{{ tag }}", rootfs: "{{ repo }}/oraclelinux-image:5.15-aarch64-{{ tag }}", arch: "aarch64", skip_legacy_bpf_tests: true} # noqa: yaml[line-length]
-  - {name: "ubuntu-6.5", kernel: "{{ repo }}/ubuntu-kernel:6.5-aarch64-{{ tag }}", rootfs: "{{ repo }}/ubuntu-image:6.5-aarch64-{{ tag }}", arch: "aarch64"} # noqa: yaml[line-length]
+  - {name: "ubuntu-6.5", kernel: "{{ repo }}/ubuntu-kernel:6.5-aarch64-v0.3.2", rootfs: "{{ repo }}/ubuntu-image:6.5-aarch64-v0.3.2", arch: "aarch64"} # noqa: yaml[line-length]
 
 builders:
   - {name: "centos-builder", kernel: "{{ repo }}/ubuntu-kernel:6.5-x86_64-{{ tag }}", rootfs: "{{ repo }}/builder:x86_64-{{ tag }}", arch: "x86_64"} # noqa: yaml[line-length]
