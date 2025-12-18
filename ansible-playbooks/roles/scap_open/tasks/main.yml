@@ -32,7 +32,17 @@
     - name: Enable old Bpf support
       ansible.builtin.set_fact:
         scap_open_bpf_supported: true
-      when: ansible_kernel is version(scap_open_bpf_minimum_kver[ansible_architecture],'>=')
+      # Enable legacy BPF support if the minimum kernel version requirement is met and the user didn't explicitly decide
+      # to skip legacy BPF tests.
+      when:
+        - ansible_kernel is version(scap_open_bpf_minimum_kver[ansible_architecture],'>=')
+        - machines
+          | selectattr('name', 'equalto', inventory_hostname)
+          | map(attribute='skip_legacy_bpf_tests')
+          | map('default', false)
+          | select('equalto', true)
+          | list
+          | length == 0
 
 - name: Prepare the build directory
   block:
