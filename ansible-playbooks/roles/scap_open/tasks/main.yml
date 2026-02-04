@@ -42,7 +42,6 @@
              cmake
              -DUSE_BUNDLED_DEPS=ON
              -DBUILD_LIBSCAP_MODERN_BPF=OFF
-             -DBUILD_LIBSCAP_GVISOR=OFF
              -DCREATE_TEST_TARGETS=OFF
              ..
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
