@@ -66,7 +66,6 @@
              -DBUILD_LIBSCAP_MODERN_BPF=ON \
              -DMODERN_BPF_SKEL_DIR=/tmp \
              -DBUILD_DRIVER=Off \
-             -DBUILD_BPF=Off \
              -DBUILD_LIBSCAP_GVISOR=OFF \
              -DCREATE_TEST_TARGETS=Off \
              ..

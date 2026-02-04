@@ -27,24 +27,6 @@
         scap_open_modern_bpf_supported: false
       when: scap_open_result.rc == 95
 
-- name: Check Old Bpf Support
-  block:
-    - name: Enable old Bpf support
-      ansible.builtin.set_fact:
-        scap_open_bpf_supported: true
-      # Enable legacy BPF support if the minimum kernel version requirement is met and the user didn't explicitly decide
-      # to skip legacy BPF tests.
-      when:
-        - ansible_kernel is version(scap_open_bpf_minimum_kver[ansible_architecture],'>=')
-        - machines
-          | selectattr('name', 'equalto', inventory_hostname)
-          | selectattr('arch', 'equalto', ansible_architecture)
-          | map(attribute='skip_legacy_bpf_tests')
-          | map('default', false)
-          | select('equalto', true)
-          | list
-          | length == 0
-
 - name: Prepare the build directory
   block:
     - name: Create cmake output dir
@@ -61,7 +43,6 @@
              -DUSE_BUNDLED_DEPS=ON
              -DBUILD_LIBSCAP_MODERN_BPF=OFF
              -DBUILD_LIBSCAP_GVISOR=OFF
-             -DBUILD_BPF={{ scap_open_bpf_supported }}
              -DCREATE_TEST_TARGETS=OFF
              ..
         chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
@@ -139,50 +120,6 @@
       ansible.builtin.copy:
         content: "{{ scap_open_result | to_nice_json }}"
         dest: "{{ scap_open_output_dest_dir }}/kmod_scap-open.json"
-        mode: '0755'
-      delegate_to: localhost
-      become: false
-
-- name: Build bpf probe
-  block:
-    - name: Build bpf probe
-      ansible.builtin.command:
-        cmd: cmake --build . --target bpf --parallel {{ cpus }}
-        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: scap_open_bpf_probe_result
-      when: scap_open_bpf_supported
-      changed_when: false
-  rescue:
-    - name: Print error message to stdout --- build bpf probe
-      ansible.builtin.debug:
-        var: scap_open_bpf_probe_result
-  always:
-    - name: Dump error message to file
-      ansible.builtin.copy:
-        content: "{{ scap_open_bpf_probe_result | to_nice_json }}"
-        dest: "{{ scap_open_output_dest_dir }}/bpf-probe_build.json"
-        mode: '0755'
-      delegate_to: localhost
-      become: false
-
-- name: Scap-open + bpf probe
-  block:
-    - name: Run scap-open with bpf probe
-      ansible.builtin.command:
-        cmd: /tmp/scap-open --num_events 50 --bpf driver/bpf/probe.o
-        chdir: "{{ remote_repos_folder }}/repos/{{ repos['libs'].name }}/build"
-      register: scap_open_result
-      when: scap_open_bpf_supported
-      changed_when: false
-  rescue:
-    - name: Print error message to stdout --- scap-open + bpf probe
-      ansible.builtin.debug:
-        var: scap_open_result
-  always:
-    - name: Dump error message to file
-      ansible.builtin.copy:
-        content: "{{ scap_open_result | to_nice_json }}"
-        dest: "{{ scap_open_output_dest_dir }}/bpf-probe_scap-open.json"
         mode: '0755'
       delegate_to: localhost
       become: false
